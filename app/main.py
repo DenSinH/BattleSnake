@@ -1,7 +1,11 @@
 import json
-import os
 import random
 import bottle
+import os
+import sys
+
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
 
 from api import ping_response, start_response, move_response, end_response
 
