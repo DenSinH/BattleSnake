@@ -4,6 +4,7 @@ import bottle
 import os
 import sys
 
+# fixing api import error
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
 
@@ -66,8 +67,8 @@ def move():
 
     directions = ['up', 'down', 'left', 'right']
     direction = random.choice(directions)
-
-    return move_response(direction)
+    print("MOVING SNAKE")
+    return move_response("down")
 
 
 @bottle.post('/end')
