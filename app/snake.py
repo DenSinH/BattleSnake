@@ -15,7 +15,7 @@ class Game(object):
         self.snakes = []
         for snake in snakes:
             if snake["id"] != you["id"]:
-                snakes.append(**snake)
+                snakes.append(Snake(**snake))
 
         self.you = Snake(**you)
 
