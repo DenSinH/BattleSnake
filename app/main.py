@@ -14,10 +14,9 @@ from api import ping_response, start_response, move_response, end_response
 
 @bottle.route('/')
 def index():
-    return '''
-    Battlesnake documentation can be found at
-       <a href="https://docs.battlesnake.com">https://docs.battlesnake.com</a>.
-    '''
+    return """
+    - Data processing
+    """
 
 
 @bottle.route('/static/<path:path>')
