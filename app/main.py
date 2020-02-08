@@ -67,8 +67,8 @@ def move():
 
     directions = ['up', 'down', 'left', 'right']
     direction = random.choice(directions)
-    print("MOVING SNAKE")
-    return move_response("down")
+
+    return move_response(direction)
 
 
 @bottle.post('/end')
