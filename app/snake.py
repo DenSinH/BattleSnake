@@ -1,6 +1,6 @@
 class Snake(object):
 
-    def __init__(self, body, health):
+    def __init__(self, body, health, **kwargs):
         self.health = health
         self.body = [(pos["x"], pos["y"]) for pos in body]
         self.head = self.body[0]
@@ -8,7 +8,7 @@ class Snake(object):
 
 class Game(object):
 
-    def __init__(self, height, width, food, snakes, you):
+    def __init__(self, height, width, food, snakes, you, **kwargs):
         self.height = height
         self.width = width
         self.food = [(pos["x"], pos["y"]) for pos in food]
