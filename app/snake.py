@@ -86,9 +86,9 @@ class Game(object):
                     found.add(next_path.end)
                     todo.append(next_path)
 
-                # todo: no path to food, choose largest area?
-                if len(todo) == 0:
-                    return next_path.get()
+            # todo: no path to food, choose largest area?
+            if len(todo) == 0:
+                return current.get()
 
 
 def make_move(data):
