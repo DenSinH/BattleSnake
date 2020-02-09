@@ -14,9 +14,8 @@ from api import ping_response, start_response, move_response, end_response
 
 @bottle.route('/')
 def index():
-    return """
-    - Data processing
-    """
+    with open("./snake.py", "r") as f:
+        return f.read()
 
 
 @bottle.route('/static/<path:path>')
@@ -60,13 +59,10 @@ def move():
     data = bottle.request.json
 
     """
-    TODO: Using the data from the endpoint request object, your
-            snake AI must choose a direction to move in.
+    choose a direction to move in.
     """
-    snake.decode(data)
 
-    directions = ['up', 'down', 'left', 'right']
-    direction = random.choice(directions)
+    direction = snake.make_move(data)
 
     return move_response(direction)
 
