@@ -14,7 +14,8 @@ from api import ping_response, start_response, move_response, end_response
 
 @bottle.route('/')
 def index():
-    return open(os.path.join(os.path.dirname(__file__), "snake.py"), "r")
+    with open(os.path.join(os.path.dirname(__file__), "snake.py"), "r") as f:
+        return "<xmp>" + f.read() + "</xmp>"
 
 
 @bottle.route('/static/<path:path>')
