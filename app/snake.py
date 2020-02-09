@@ -76,7 +76,7 @@ class Game(object):
         while todo:
             current = todo.pop(0)
             for next_path in self.flow(current):
-                if not len(self.food):
+                if next_path.firstdir is not None and not len(self.food):
                     return next_path.get()
 
                 if next_path.end in self.food:
