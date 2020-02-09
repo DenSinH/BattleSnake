@@ -59,7 +59,7 @@ class Game(object):
             else:
                 next_path = start.move(direction)
                 # moving into borders or other snakes is not allowed
-                if 0 <= next_path[0] < self.width and 0 <= next_path[1] < self.height:
+                if 0 <= next_path.end[0] < self.width and 0 <= next_path.end[1] < self.height:
                     for snake in self.snakes + [self.you]:
                         if next_path.end in snake.body:
                             break

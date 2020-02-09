@@ -63,6 +63,7 @@ def move():
     """
 
     direction = snake.make_move(data)
+    print("MOVING", direction)
 
     return move_response(direction)
 
