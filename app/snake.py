@@ -20,7 +20,7 @@ class Path(object):
     def move(self, direction):
         prev = self.path[-1]
         extended = self.path + [(prev[0] + direction[0], prev[1] + direction[1])]
-        return Path(extended[-1], direction, extended, direction if len(self.path) == 1 else None)
+        return Path(extended[-1], direction, extended, self.firstdir or direction)
 
     def get(self):
         return dirs[self.firstdir]
