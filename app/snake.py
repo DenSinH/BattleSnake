@@ -14,6 +14,9 @@ class Path(object):
         self.prevdir = prevdir
         self.firstdir = firstdir
 
+    def __getitem__(self, item):
+        return self.path[item]
+
     def move(self, direction):
         prev = self.path[-1]
         extended = self.path + [(prev[0] + direction[0], prev[1] + direction[1])]
