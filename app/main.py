@@ -3,6 +3,7 @@ import random
 import bottle
 import os
 import sys
+import time
 
 # fixing api import error
 file_dir = os.path.dirname(__file__)
@@ -62,8 +63,11 @@ def move():
     choose a direction to move in.
     """
 
+    t0 = time.time()
     direction = snake.make_move(data)
-    print("MOVING", direction)
+    t = time.time() - t0
+    print("moving", direction)
+    print("decision made in", t, "seconds")
 
     return move_response(direction)
 
