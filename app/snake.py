@@ -14,6 +14,8 @@ class Game(object):
         self.food = [(pos["x"], pos["y"]) for pos in food]
         self.snakes = []
         for snake in snakes:
+            print(snake)
+            print(you)
             if snake["id"] != you["id"]:
                 self.snakes.append(Snake(**snake))
 
