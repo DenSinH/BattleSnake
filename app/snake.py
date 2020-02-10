@@ -30,6 +30,9 @@ class Path(object):
     def __iter__(self):
         return iter(self.path)
 
+    def __repr__(self):
+        return str(self.path)
+
     def move(self, direction):
         prev = self.path[-1]
         extended = self.path + [(prev[0] + direction[0], prev[1] + direction[1])]
@@ -75,7 +78,6 @@ class Game(object):
         self.you = Snake(**you)
 
     def flow(self, start):
-        result = []
         for direction in dirs:
             # moving backwards is not allowed
             if start.prevdir == (-direction[0], -direction[1]):
@@ -89,9 +91,7 @@ class Game(object):
                         if next_end in snake.body:
                             break
                     else:
-                        result.append(start.move(direction))
-
-        return result
+                        yield start.move(direction)
 
     def score(self, path):
         s = 0
@@ -149,6 +149,8 @@ class Game(object):
         :return: Path, score
         """
 
+        print(paths)
+
         dist = min(len(path) for path in paths)
         ends = {path.end for path in paths}
 
@@ -199,7 +201,7 @@ class Game(object):
 
             # only do best path if it is not dangerous
             if shortest_paths:
-                best, score = self.find_best(shortest_paths, todo[:])
+                best, score = self.find_best(shortest_paths[:], todo[:])
                 if score >= 0:
                     return best.get()
                 shortest_paths = []
