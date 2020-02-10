@@ -96,8 +96,9 @@ class Game(object):
     def score(self, path):
         s = 0
         for spot in path:
-            # we dont want to move next to another snakes head
-            if any(manhattan(path.end, snake.head) == 1 for snake in self.snakes):
+            # we dont want to move our head next to a stronger snakes head
+            if any(manhattan(path.first_head(), snake.head) == 1
+                   and snake.strength() >= self.you.strength() for snake in self.snakes):
                 return -1
 
             # snake likes to be next to game border
@@ -157,7 +158,7 @@ class Game(object):
 
                 if next_path.end in self.food:
                     components = self.components(next_path.first_head())
-                    pprint(components)
+                    print([len(component) for component in components])
                     for component in components:
                         if next_path.end in component and len(component) < len(self.you):
                             print(f"Did not allow path to {next_path.end} because component too small")
