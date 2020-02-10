@@ -99,6 +99,7 @@ class Game(object):
             # we dont want to move our head next to a stronger snakes head
             if any(manhattan(path.first_head(), snake.head) == 1
                    and snake.strength() >= self.you.strength() for snake in self.snakes):
+                print(path.get(), -1)
                 return -1
 
             # snake likes to be next to game border
@@ -116,6 +117,7 @@ class Game(object):
             elif any(spot in snake.body for snake in self.snakes):
                 s += 3
 
+        print(path.get(), s)
         return s
 
     def components(self, *extra):
