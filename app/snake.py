@@ -100,6 +100,7 @@ class Game(object):
             elif any(spot in snake.body for snake in self.snakes):
                 s += 3
 
+        return s
 
     def move(self):
         found = set(self.you.head)
