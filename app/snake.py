@@ -5,6 +5,9 @@ dirs = {
     (0, -1): "up"
 }
 
+def manhattan(point1, point2):
+    return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
+
 
 class Path(object):
 
@@ -17,13 +20,22 @@ class Path(object):
     def __getitem__(self, item):
         return self.path[item]
 
+    def __len__(self):
+        return len(self.path)
+
+    def __iter__(self):
+        return iter(self.path)
+
     def move(self, direction):
         prev = self.path[-1]
         extended = self.path + [(prev[0] + direction[0], prev[1] + direction[1])]
         return Path(extended[-1], direction, extended, self.firstdir or direction)
 
     def get(self):
-        return dirs[self.firstdir]
+        return dirs.get(self.firstdir)
+
+    def dist(self, point):
+        return len(self) + manhattan(self.end, point)
 
 
 class Snake(object):
@@ -57,30 +69,55 @@ class Game(object):
             if start.prevdir == (-direction[0], -direction[1]):
                 pass
             else:
-                next_path = start.move(direction)
+                next_end = (start.end[0] + direction[0], start.end[1] + direction[1])
+
                 # moving into borders or other snakes is not allowed
-                if 0 <= next_path.end[0] < self.width and 0 <= next_path.end[1] < self.height:
+                if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
                     for snake in self.snakes + [self.you]:
-                        if next_path.end in snake.body:
+                        if next_end in snake.body:
                             break
                     else:
-                        result.append(next_path)
+                        result.append(start.move(direction))
 
         return result
+
+    def score(self, path):
+        s = 0
+        for spot in path:
+            # we dont want to move next to a snakes head
+            if any(manhattan(path.end, snake.head) == 1 for snake in self.snakes):
+                return -1
+
+            if spot[0] in [0, self.width - 1]:
+                s += 1
+
+            if spot[1] in [0, self.height - 1]:
+                s += 1
+
+            if spot in self.you.body:
+                s += 5
+
+            elif any(spot in snake.body for snake in self.snakes):
+                s += 3
+
 
     def move(self):
         found = set(self.you.head)
         todo = [Path(self.you.head)]
 
+        # find best path among shortest paths
+        shortest_paths = []
+
         # flow outward to find closest food and move along that path
-        while todo:
+        while not shortest_paths:
             current = todo.pop(0)
             for next_path in self.flow(current):
                 if next_path.firstdir is not None and not len(self.food):
+                    # todo: no food case
                     return next_path.get()
 
                 if next_path.end in self.food:
-                    return next_path.get()
+                    shortest_paths.append(next_path)
 
                 if next_path.end not in found:
                     found.add(next_path.end)
@@ -89,6 +126,24 @@ class Game(object):
             # todo: no path to food, choose largest area, largest path?
             if len(todo) == 0:
                 return current.get()
+
+        dist = min(len(path) for path in shortest_paths)
+        ends = {path.end for path in shortest_paths}
+
+        while len(todo):
+            current = todo.pop(0)
+
+            for next_path in self.flow(current):
+
+                if min(next_path.dist(end) for end in ends) > dist:
+                    continue
+
+                if next_path.end in ends:
+                    shortest_paths.append(next_path)
+                else:
+                    todo.append(next_path)
+
+        return max(shortest_paths, key=self.score).get()
 
 
 def make_move(data):
