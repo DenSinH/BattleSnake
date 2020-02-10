@@ -143,6 +143,31 @@ class Game(object):
 
         return components
 
+    def find_best(self, paths, left):
+        """
+        :param paths: Path[]
+        :return: Path, score
+        """
+
+        dist = min(len(path) for path in paths)
+        ends = {path.end for path in paths}
+
+        while len(left):
+            current = left.pop(0)
+
+            for next_path in self.flow(current):
+
+                if min(next_path.dist(end) for end in ends) > dist:
+                    continue
+
+                if next_path.end in ends:
+                    paths.append(next_path)
+                else:
+                    left.append(next_path)
+
+        best = max(paths, key=self.score).get()
+        return best, self.score(best)
+
     def move(self):
         found = set(self.you.head)
         todo = [Path(self.you.head)]
@@ -172,27 +197,16 @@ class Game(object):
                     found.add(next_path.end)
                     todo.append(next_path)
 
+            # only do best path if it is not dangerous
+            if shortest_paths:
+                best, score = self.find_best(shortest_paths, todo[:])
+                if score >= 0:
+                    return best.get()
+                shortest_paths = []
+
             # todo: no path to food, choose largest area, largest path?
             if len(todo) == 0:
                 return current.get()
-
-        dist = min(len(path) for path in shortest_paths)
-        ends = {path.end for path in shortest_paths}
-
-        while len(todo):
-            current = todo.pop(0)
-
-            for next_path in self.flow(current):
-
-                if min(next_path.dist(end) for end in ends) > dist:
-                    continue
-
-                if next_path.end in ends:
-                    shortest_paths.append(next_path)
-                else:
-                    todo.append(next_path)
-
-        return max(shortest_paths, key=self.score).get()
 
 
 def make_move(data):

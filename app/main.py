@@ -66,7 +66,7 @@ def move():
     t0 = time.time()
     direction = snake.make_move(data)
     t = time.time() - t0
-    print("moving", direction)
+    print("moving", direction, "in turn", data["turn"])
     print("decision made in", t, "seconds")
 
     return move_response(direction)
