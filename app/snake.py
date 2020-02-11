@@ -228,6 +228,8 @@ class Game(object):
 
             # only do best path if it is not dangerous
             if shortest_paths:
+                for path in shortest_paths:
+                    print(path.path)
                 best = self.find_best(shortest_paths, generation[:])
                 if self.score(best) > -INFINITY:
                     return best.get()
