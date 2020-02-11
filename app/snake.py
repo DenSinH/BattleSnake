@@ -38,7 +38,8 @@ class Path(object):
     def __add__(self, other):
         assert other.path[0] == self.end
         assert len(other) > 1
-        return Path(other.end, prevdir=other.prevdir, path=self.path + other.path[1:], firstdir=self.firstdir)
+        return Path(other.end, prevdir=other.prevdir, path=self.path + other.path[1:],
+                    firstdir=self.firstdir if len(self) > 1 else other.firstdir)
 
     def move(self, direction):
         prev = self.path[-1]
@@ -200,7 +201,6 @@ class Game(object):
                                 print(f"Did not allow path to {extension.end} because component too small")
                                 break
                         else:
-                            print("FOUND SHORTEST PATH TO", extension.end)
                             shortest_paths += [path + extension for path in generation[(start, prevdir)]]
 
                     for path in generation[(start, prevdir)]:
