@@ -35,6 +35,11 @@ class Path(object):
     def __repr__(self):
         return str(self.path)
 
+    def __add__(self, other):
+        assert other.path[0] != self.end
+        assert len(other) > 1
+        return Path(other.end, prevdir=other.prevdir, path=self.path + other.path[1:], firstdir=self.firstdir)
+
     def move(self, direction):
         prev = self.path[-1]
         extended = self.path + [(prev[0] + direction[0], prev[1] + direction[1])]
@@ -101,7 +106,6 @@ class Game(object):
             # we dont want to move our head next to a stronger snakes head
             if any(manhattan(path.first_head(), snake.head) == 1
                    and snake.strength() >= self.you.strength() for snake in self.snakes):
-                print(path.get(), -1)
                 return -INFINITY
 
             # snake likes to be next to game border if it is not next to another snake
@@ -130,7 +134,6 @@ class Game(object):
             if len(path) > 1:
                 s += 5 * sum([1 for i in self.flow(Path(path[1]))])
 
-        print(path.get(), s)
         return s
 
     def components(self, *extra):
@@ -187,8 +190,8 @@ class Game(object):
             return max(self.flow(Path(self.you.head)), key=self.score).get()
 
         found = {self.you.head: 1}
-        generation = [Path(self.you.head)]
-        next_generation = []
+        generation = {(self.you.head, None): [Path(self.you.head)]}
+        next_generation = {}
         components = self.components()
 
         print("COMPONENTS BEFORE", [len(component) for component in components])
@@ -199,24 +202,29 @@ class Game(object):
         # flow outward to find closest food and move along that path
         while generation:
 
-            for current in generation:
+            for start, prevdir in generation:
 
-                for next_path in self.flow(current):
+                for extension in self.flow(Path(start, prevdir=prevdir)):
 
-                    if next_path.end in self.food:
+                    if extension.end in self.food:
 
                         # empty component
                         for component in components:
                             # todo: in small boards/late game, any component might be smaller than the snake
-                            if next_path.end in component and len(component) < len(self.you):
-                                print(f"Did not allow path to {next_path.end} because component too small")
+                            if extension.end in component and len(component) < len(self.you):
+                                print(f"Did not allow path to {extension.end} because component too small")
                                 break
                         else:
-                            shortest_paths.append(next_path)
+                            shortest_paths += [path + extension for path in generation[(start, prevdir)]]
 
-                    if next_path.end not in found or len(next_path) <= found[next_path.end]:
-                        found[next_path.end] = len(next_path)
-                        next_generation.append(next_path)
+                    if extension.end not in found:
+                        found[extension.end] = len(generation[(start, prevdir)][0])
+                    else:
+                        for path in generation[(start, prevdir)]:
+                            if len(path) + 1 <= found[extension.end]:
+                                if (extension.end, extension.prevdir) not in next_generation:
+                                    next_generation[(extension.end, extension.prevdir)] = []
+                                next_generation[(extension.end, extension.prevdir)].append(path + extension)
 
             # only do best path if it is not dangerous
             if shortest_paths:
@@ -226,7 +234,7 @@ class Game(object):
                 shortest_paths = []
 
             generation = next_generation
-            next_generation = []
+            next_generation = {}
 
         # todo: no path to food, choose largest area, largest path?
         choices = {}
