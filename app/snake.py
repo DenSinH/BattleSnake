@@ -125,7 +125,9 @@ class Game(object):
             if spot in self.you.body:
                 s += 5
 
-            # snake likes to be next to other snakes too sort of cause it leaves room
+            # snake likes to have options
+            if len(path) > 1:
+                s += 5 * sum([1 for i in self.flow(Path(path[1]))])
 
         print(path.get(), s)
         return s
