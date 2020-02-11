@@ -159,29 +159,13 @@ class Game(object):
 
         return components
 
-    def find_best(self, paths, left):
+    def find_best(self, paths):
         """
         :param paths: Path[]
         :return: Path
         """
-        dist = min(path.dist(path.end) for path in paths)
-        ends = {path.end for path in paths}
-
-        while len(left):
-            current = left.pop(0)
-
-            for next_path in self.flow(current):
-
-                if min(next_path.dist(end) for end in ends) > dist:
-                    continue
-
-                if next_path.end in ends:
-                    paths.append(next_path)
-                else:
-                    left.append(next_path)
-
-        best = max(paths, key=self.score)
-        return best
+        
+        return max(paths, key=self.score)
 
     def move(self):
         # todo: find longest path if in small connected component
@@ -230,7 +214,7 @@ class Game(object):
             if shortest_paths:
                 for path in shortest_paths:
                     print(path.path)
-                best = self.find_best(shortest_paths, generation[:])
+                best = self.find_best(shortest_paths)
                 if self.score(best) > -INFINITY:
                     return best.get()
                 shortest_paths = []
