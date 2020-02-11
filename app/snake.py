@@ -197,44 +197,46 @@ class Game(object):
         shortest_paths = []
 
         # flow outward to find closest food and move along that path
-        while not shortest_paths:
-            current = generation.pop(0)
-            for next_path in self.flow(current):
+        while generation:
 
-                if next_path.end in self.food:
+            for current in generation:
 
-                    # empty component
-                    for component in components:
-                        # todo: in small boards/late game, any component might be smaller than the snake
-                        if next_path.end in component and len(component) < len(self.you):
-                            print(f"Did not allow path to {next_path.end} because component too small")
-                            break
-                    else:
-                        shortest_paths.append(next_path)
+                for next_path in self.flow(current):
 
-                if next_path.end not in found:
-                    found.add(next_path.end)
-                    next_generation.append(next_path)
+                    if next_path.end in self.food:
 
-            # only do best path if it is not dangerous
-            if shortest_paths and not generation:
-                best = self.find_best(shortest_paths, generation[:])
-                if self.score(best) > -INFINITY:
-                    return best.get()
-                shortest_paths = []
+                        # empty component
+                        for component in components:
+                            # todo: in small boards/late game, any component might be smaller than the snake
+                            if next_path.end in component and len(component) < len(self.you):
+                                print(f"Did not allow path to {next_path.end} because component too small")
+                                break
+                        else:
+                            shortest_paths.append(next_path)
 
-            # todo: no path to food, choose largest area, largest path?
-            if len(next_generation) == 0:
-                choices = {}
-                for next_path in self.flow(Path(self.you.head)):
-                    choices[next_path.get()] = 0
+                    if next_path.end not in found:
+                        found.add(next_path.end)
+                        next_generation.append(next_path)
 
-                    # find largest area to go to
-                    for component in components:
-                        if next_path.end in component and len(component) < len(self.you):
-                            choices[next_path.get()] += len(component) - len(self.you)
+                # todo: no path to food, choose largest area, largest path?
+                if len(next_generation) == 0:
+                    choices = {}
+                    for next_path in self.flow(Path(self.you.head)):
+                        choices[next_path.get()] = 0
 
-                return max(choices, key=lambda i: choices[i])
+                        # find largest area to go to
+                        for component in components:
+                            if next_path.end in component and len(component) < len(self.you):
+                                choices[next_path.get()] += len(component) - len(self.you)
+
+                    return max(choices, key=lambda i: choices[i])
+
+                # only do best path if it is not dangerous
+                if shortest_paths and not generation:
+                    best = self.find_best(shortest_paths, generation[:])
+                    if self.score(best) > -INFINITY:
+                        return best.get()
+                    shortest_paths = []
 
             generation = next_generation
             next_generation = []
