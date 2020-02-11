@@ -161,8 +161,9 @@ class Game(object):
         :param paths: Path[]
         :return: Path
         """
-        dist = min(path.dist(path.end) for path in paths)
-        ends = {path.end for path in paths}
+        dist = min(path.dist(path.end) for path in paths)  # always at most 3 elements
+                                                           # (when 3 foods are placed in "T" formation)
+        ends = {path.end for path in paths}  # also at most 3 elements for the same reason
 
         while len(left):
             current = left.pop(0)
@@ -186,9 +187,8 @@ class Game(object):
         if len(self.food) == 0:
             return max(self.flow(Path(self.you.head)), key=self.score).get()
 
-        found = {self.you.head: 1}
-        generation = [Path(self.you.head)]
-        next_generation = []
+        found = set(self.you.head)
+        todo = [Path(self.you.head)]
         components = self.components()
 
         print("COMPONENTS BEFORE", [len(component) for component in components])
@@ -197,48 +197,44 @@ class Game(object):
         shortest_paths = []
 
         # flow outward to find closest food and move along that path
-        while generation:
+        while not shortest_paths:
+            current = todo.pop(0)
+            for next_path in self.flow(current):
 
-            for current in generation:
+                if next_path.end in self.food:
 
-                for next_path in self.flow(current):
+                    # empty component
+                    for component in components:
+                        # todo: in small boards/late game, any component might be smaller than the snake
+                        if next_path.end in component and len(component) < len(self.you):
+                            print(f"Did not allow path to {next_path.end} because component too small")
+                            break
+                    else:
+                        shortest_paths.append(next_path)
 
-                    if next_path.end in self.food:
-
-                        # empty component
-                        for component in components:
-                            # todo: in small boards/late game, any component might be smaller than the snake
-                            if next_path.end in component and len(component) < len(self.you):
-                                print(f"Did not allow path to {next_path.end} because component too small")
-                                break
-                        else:
-                            shortest_paths.append(next_path)
-
-                    if next_path.end not in found or len(next_path) <= found[next_path.end]:
-                        found[next_path.end] = len(next_path)
-                        next_generation.append(next_path)
+                if next_path.end not in found:
+                    found.add(next_path.end)
+                    todo.append(next_path)
 
             # only do best path if it is not dangerous
             if shortest_paths:
-                best = self.find_best(shortest_paths, generation[:])
+                best = self.find_best(shortest_paths, todo[:])
                 if self.score(best) > -INFINITY:
                     return best.get()
                 shortest_paths = []
 
-            generation = next_generation
-            next_generation = []
+            # todo: no path to food, choose largest area, largest path?
+            if len(todo) == 0:
+                choices = {}
+                for next_path in self.flow(Path(self.you.head)):
+                    choices[next_path.get()] = 0
 
-        # todo: no path to food, choose largest area, largest path?
-        choices = {}
-        for next_path in self.flow(Path(self.you.head)):
-            choices[next_path.get()] = 0
+                    # find largest area to go to
+                    for component in components:
+                        if next_path.end in component and len(component) < len(self.you):
+                            choices[next_path.get()] += len(component) - len(self.you)
 
-            # find largest area to go to
-            for component in components:
-                if next_path.end in component and len(component) < len(self.you):
-                    choices[next_path.get()] += len(component) - len(self.you)
-
-        return max(choices, key=lambda i: choices[i])
+                return max(choices, key=lambda i: choices[i])
 
 
 def make_move(data):
