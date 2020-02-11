@@ -218,19 +218,6 @@ class Game(object):
                         found.add(next_path.end)
                         next_generation.append(next_path)
 
-                # todo: no path to food, choose largest area, largest path?
-                if len(next_generation) == 0:
-                    choices = {}
-                    for next_path in self.flow(Path(self.you.head)):
-                        choices[next_path.get()] = 0
-
-                        # find largest area to go to
-                        for component in components:
-                            if next_path.end in component and len(component) < len(self.you):
-                                choices[next_path.get()] += len(component) - len(self.you)
-
-                    return max(choices, key=lambda i: choices[i])
-
                 # only do best path if it is not dangerous
                 if shortest_paths and not generation:
                     best = self.find_best(shortest_paths, generation[:])
@@ -240,6 +227,18 @@ class Game(object):
 
             generation = next_generation
             next_generation = []
+
+        # todo: no path to food, choose largest area, largest path?
+        choices = {}
+        for next_path in self.flow(Path(self.you.head)):
+            choices[next_path.get()] = 0
+
+            # find largest area to go to
+            for component in components:
+                if next_path.end in component and len(component) < len(self.you):
+                    choices[next_path.get()] += len(component) - len(self.you)
+
+        return max(choices, key=lambda i: choices[i])
 
 
 def make_move(data):
