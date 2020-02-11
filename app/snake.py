@@ -160,9 +160,8 @@ class Game(object):
         :param paths: Path[]
         :return: Path
         """
-        dist = min(path.dist(path.end) for path in paths)  # always at most 3 elements
-                                                           # (when 3 foods are placed in "T" formation)
-        ends = {path.end for path in paths}  # also at most 3 elements for the same reason
+        dist = min(path.dist(path.end) for path in paths)
+        ends = {path.end for path in paths}
 
         while len(left):
             current = left.pop(0)
@@ -218,12 +217,12 @@ class Game(object):
                         found.add(next_path.end)
                         next_generation.append(next_path)
 
-                # only do best path if it is not dangerous
-                if shortest_paths and not generation:
-                    best = self.find_best(shortest_paths, generation[:])
-                    if self.score(best) > -INFINITY:
-                        return best.get()
-                    shortest_paths = []
+            # only do best path if it is not dangerous
+            if shortest_paths:
+                best = self.find_best(shortest_paths, generation[:])
+                if self.score(best) > -INFINITY:
+                    return best.get()
+                shortest_paths = []
 
             generation = next_generation
             next_generation = []
