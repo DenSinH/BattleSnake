@@ -185,6 +185,7 @@ class Game(object):
 
         # flow outward to find closest food and move along that path
         while generation:
+            print(len(generation))
 
             for start, prevdir in generation:
 
