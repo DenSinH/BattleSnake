@@ -203,14 +203,11 @@ class Game(object):
                             print("FOUND SHORTEST PATH TO", extension.end)
                             shortest_paths += [path + extension for path in generation[(start, prevdir)]]
 
-                    if extension.end not in found:
-                        found[extension.end] = len(generation[(start, prevdir)][0])
-                    else:
-                        for path in generation[(start, prevdir)]:
-                            if len(path) + 1 <= found[extension.end]:
-                                if (extension.end, extension.prevdir) not in next_generation:
-                                    next_generation[(extension.end, extension.prevdir)] = []
-                                next_generation[(extension.end, extension.prevdir)].append(path + extension)
+                    for path in generation[(start, prevdir)]:
+                        if extension.end not in found or len(path) + 1 <= found[extension.end]:
+                            if (extension.end, extension.prevdir) not in next_generation:
+                                next_generation[(extension.end, extension.prevdir)] = []
+                            next_generation[(extension.end, extension.prevdir)].append(path + extension)
 
             # only do best path if it is not dangerous
             if shortest_paths:
