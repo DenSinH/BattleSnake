@@ -174,8 +174,9 @@ class Game(object):
 
         found = set(self.you.head)
         todo = [Path(self.you.head)]
+        components = self.components()
 
-        components = {}
+        print("COMPONENTS BEFORE", [len(component) for component in components])
 
         # find best path among shortest paths
         shortest_paths = []
@@ -186,13 +187,9 @@ class Game(object):
             for next_path in self.flow(current):
 
                 if next_path.end in self.food:
-                    if next_path.first_head() in components:
-                        comps = components[next_path.first_head()]
-                    else:
-                        components[next_path.first_head()] = comps = self.components(next_path.first_head())
 
-                    print([len(component) for component in components])
-                    for component in comps:
+                    # empty component
+                    for component in components:
                         # todo: in small boards/late game, any component might be smaller than the snake
                         if next_path.end in component and len(component) < len(self.you):
                             print(f"Did not allow path to {next_path.end} because component too small")
@@ -215,8 +212,6 @@ class Game(object):
             if len(todo) == 0:
                 choices = {}
                 for next_path in self.flow(Path(self.you.head)):
-                    choices[next_path.get()] = 0
-                    components = self.components(next_path.first_head())
 
                     # find largest area to go to
                     for component in components:
@@ -225,7 +220,7 @@ class Game(object):
 
                 return max(choices, key=lambda i: choices[i])
 
-                    
+
 def make_move(data):
     game = Game(you=data["you"], **data["board"])
     return game.move()
