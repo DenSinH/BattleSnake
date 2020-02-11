@@ -207,6 +207,7 @@ class Game(object):
 
             # todo: no path to food, choose largest area, largest path?
             if len(todo) == 0:
+                print("NO DECISION, RANDOM")
                 return current.get()
 
 
