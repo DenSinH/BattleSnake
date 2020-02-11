@@ -185,7 +185,7 @@ class Game(object):
 
         # flow outward to find closest food and move along that path
         while generation:
-            print(len(generation))
+            pprint(generation)
 
             for start, prevdir in generation:
 
@@ -221,6 +221,8 @@ class Game(object):
                     return best.get()
                 shortest_paths = []
 
+            print("NEXT GENERATION")
+            pprint(next_generation)
             generation = next_generation
             next_generation = {}
 
