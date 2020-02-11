@@ -148,11 +148,8 @@ class Game(object):
         :param paths: Path[]
         :return: Path
         """
-
-        print(paths)
-
-        dist = min(len(path) for path in paths)
-        ends = {path.end for path in paths}
+        dist = min(len(path) for path in paths)  # always at most 3 elements (when 3 foods are placed in "T" formation)
+        ends = {path.end for path in paths}  # also at most 3 elements for the same reason
 
         while len(left):
             current = left.pop(0)
@@ -190,6 +187,7 @@ class Game(object):
                     components = self.components(next_path.first_head())
                     print([len(component) for component in components])
                     for component in components:
+                        # todo: in small boards/late game, any component might be smaller than the snake
                         if next_path.end in component and len(component) < len(self.you):
                             print(f"Did not allow path to {next_path.end} because component too small")
                             break
@@ -250,4 +248,9 @@ x = 0, y = 0 top left
 
 x = l - 1, y = l - 1 bottom right
 first element is head
+"""
+
+
+"""
+todo: aggression (sectioning off other snakes, head to head colission)
 """
