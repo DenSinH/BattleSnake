@@ -146,7 +146,7 @@ class Game(object):
     def find_best(self, paths, left):
         """
         :param paths: Path[]
-        :return: Path, score
+        :return: Path
         """
 
         print(paths)
@@ -167,8 +167,8 @@ class Game(object):
                 else:
                     left.append(next_path)
 
-        best = max(paths, key=self.score).get()
-        return best, self.score(best)
+        best = max(paths, key=self.score)
+        return best
 
     def move(self):
         found = set(self.you.head)
@@ -201,8 +201,8 @@ class Game(object):
 
             # only do best path if it is not dangerous
             if shortest_paths:
-                best, score = self.find_best(shortest_paths[:], todo[:])
-                if score >= 0:
+                best = self.find_best(shortest_paths[:], todo[:])
+                if self.score(best) >= 0:
                     return best.get()
                 shortest_paths = []
 
