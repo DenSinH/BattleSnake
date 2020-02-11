@@ -36,7 +36,7 @@ class Path(object):
         return str(self.path)
 
     def __add__(self, other):
-        assert other.path[0] != self.end
+        assert other.path[0] == self.end
         assert len(other) > 1
         return Path(other.end, prevdir=other.prevdir, path=self.path + other.path[1:], firstdir=self.firstdir)
 
