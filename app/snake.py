@@ -187,7 +187,8 @@ class Game(object):
             return max(self.flow(Path(self.you.head)), key=self.score).get()
 
         found = set(self.you.head)
-        todo = [Path(self.you.head)]
+        generation = [Path(self.you.head)]
+        next_generation = []
         components = self.components()
 
         print("COMPONENTS BEFORE", [len(component) for component in components])
@@ -197,7 +198,7 @@ class Game(object):
 
         # flow outward to find closest food and move along that path
         while not shortest_paths:
-            current = todo.pop(0)
+            current = generation.pop(0)
             for next_path in self.flow(current):
 
                 if next_path.end in self.food:
@@ -213,17 +214,17 @@ class Game(object):
 
                 if next_path.end not in found:
                     found.add(next_path.end)
-                    todo.append(next_path)
+                    next_generation.append(next_path)
 
             # only do best path if it is not dangerous
-            if shortest_paths and (not todo or len(todo[0]) > max(len(path) for path in shortest_paths)):
-                best = self.find_best(shortest_paths, todo[:])
+            if shortest_paths and not generation:
+                best = self.find_best(shortest_paths, generation[:])
                 if self.score(best) > -INFINITY:
                     return best.get()
                 shortest_paths = []
 
             # todo: no path to food, choose largest area, largest path?
-            if len(todo) == 0:
+            if len(next_generation) == 0:
                 choices = {}
                 for next_path in self.flow(Path(self.you.head)):
                     choices[next_path.get()] = 0
@@ -234,6 +235,9 @@ class Game(object):
                             choices[next_path.get()] += len(component) - len(self.you)
 
                 return max(choices, key=lambda i: choices[i])
+
+            generation = next_generation
+            next_generation = []
 
 
 def make_move(data):
