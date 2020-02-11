@@ -164,7 +164,7 @@ class Game(object):
         :param paths: Path[]
         :return: Path
         """
-        
+
         return max(paths, key=self.score)
 
     def move(self):
@@ -199,6 +199,7 @@ class Game(object):
                                 print(f"Did not allow path to {extension.end} because component too small")
                                 break
                         else:
+                            print("FOUND SHORTEST PATH TO", extension.end)
                             shortest_paths += [path + extension for path in generation[(start, prevdir)]]
 
                     if extension.end not in found:
