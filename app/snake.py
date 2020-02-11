@@ -8,6 +8,7 @@ dirs = {
     (0, -1): "up"
 }
 
+INFINITY = 9999999
 
 def manhattan(point1, point2):
     return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
@@ -100,22 +101,31 @@ class Game(object):
             if any(manhattan(path.first_head(), snake.head) == 1
                    and snake.strength() >= self.you.strength() for snake in self.snakes):
                 print(path.get(), -1)
-                return -1
+                return -INFINITY
 
-            # snake likes to be next to game border
-            if spot[0] in [0, self.width - 1]:
-                s += 1
+            # snake likes to be next to game border if it is not next to another snake
+            if any(spot in snake.body for snake in self.snakes):
+                if spot[0] in [0, self.width - 1]:
+                    s -= 3
 
-            if spot[1] in [0, self.height - 1]:
-                s += 1
+                elif spot[1] in [0, self.height - 1]:
+                    s -= 3
+
+                else:
+                    s += 3
+
+            else:
+                if spot[0] in [0, self.width - 1]:
+                    s += 1
+
+                elif spot[1] in [0, self.height - 1]:
+                    s += 1
 
             # snake likes to be next to own body even more
             if spot in self.you.body:
                 s += 5
 
-            # snake likes to be next to other snakes too sort of
-            elif any(spot in snake.body for snake in self.snakes):
-                s += 3
+            # snake likes to be next to other snakes too sort of cause it leaves room
 
         print(path.get(), s)
         return s
@@ -204,7 +214,7 @@ class Game(object):
             # only do best path if it is not dangerous
             if shortest_paths:
                 best = self.find_best(shortest_paths, todo[:])
-                if self.score(best) >= 0:
+                if self.score(best) > -INFINITY:
                     return best.get()
                 shortest_paths = []
 
