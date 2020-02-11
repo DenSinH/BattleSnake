@@ -171,6 +171,10 @@ class Game(object):
         return best
 
     def move(self):
+        # no food case:
+        if len(self.food) == 0:
+            return max(self.flow(Path(self.you.head)), key=self.score).get()
+
         found = set(self.you.head)
         todo = [Path(self.you.head)]
 
@@ -181,9 +185,6 @@ class Game(object):
         while not shortest_paths:
             current = todo.pop(0)
             for next_path in self.flow(current):
-                if next_path.firstdir is not None and not len(self.food):
-                    # todo: no food case
-                    return next_path.get()
 
                 if next_path.end in self.food:
                     components = self.components(next_path.first_head())
@@ -201,7 +202,7 @@ class Game(object):
 
             # only do best path if it is not dangerous
             if shortest_paths:
-                best = self.find_best(shortest_paths[:], todo[:])
+                best = self.find_best(shortest_paths, todo[:])
                 if self.score(best) >= 0:
                     return best.get()
                 shortest_paths = []
