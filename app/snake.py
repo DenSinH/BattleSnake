@@ -212,6 +212,7 @@ class Game(object):
             if len(todo) == 0:
                 choices = {}
                 for next_path in self.flow(Path(self.you.head)):
+                    choices[next_path.get()] = 0
 
                     # find largest area to go to
                     for component in components:
