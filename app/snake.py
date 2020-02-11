@@ -160,7 +160,8 @@ class Game(object):
         :param paths: Path[]
         :return: Path
         """
-        dist = min(len(path) for path in paths)  # always at most 3 elements (when 3 foods are placed in "T" formation)
+        dist = min(path.dist(path.end) for path in paths)  # always at most 3 elements
+                                                           # (when 3 foods are placed in "T" formation)
         ends = {path.end for path in paths}  # also at most 3 elements for the same reason
 
         while len(left):
@@ -180,6 +181,7 @@ class Game(object):
         return best
 
     def move(self):
+        # todo: find longest path if in small connected component
         # no food case:
         if len(self.food) == 0:
             return max(self.flow(Path(self.you.head)), key=self.score).get()
@@ -214,7 +216,7 @@ class Game(object):
                     todo.append(next_path)
 
             # only do best path if it is not dangerous
-            if shortest_paths:
+            if shortest_paths and (not todo or len(todo[0]) > max(len(path) for path in shortest_paths)):
                 best = self.find_best(shortest_paths, todo[:])
                 if self.score(best) > -INFINITY:
                     return best.get()

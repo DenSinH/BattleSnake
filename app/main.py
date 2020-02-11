@@ -69,7 +69,7 @@ def move():
     print("moving", direction, "in turn", data["turn"])
     print("decision made in", t, "seconds")
 
-    return move_response(direction)
+    return move_response(direction) or "up"
 
 
 @bottle.post('/end')
