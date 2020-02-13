@@ -237,19 +237,13 @@ class Game(object):
 
         head_field, food_found = self.flow([np.array(self.you.head)], allowed_food, head_field)
 
-        allowed_squares = (head_field + food_field) == food_field[self.you.head]
-
-        print(head_field.T)
-        print(food_field.T)
-        print((head_field + food_field).T)
-        print(food_field[self.you.head])
-        print(allowed_squares.T)
-
         # todo: no reachable food case
         if not food_found:
             return self.no_food(components)
 
         food_field, _ = self.flow([np.array(food) for food in food_found], {self.you.head}, food_field)
+
+        allowed_squares = (head_field + food_field) == food_field[self.you.head]
 
         paths = [Path(self.you.head)]
 
@@ -284,7 +278,7 @@ class Game(object):
         # todo: dont find all paths, assing scores to squares and find best path among them
         # todo: still too many paths
         print(len(paths), "PATHS FOUND TO FOOD")
-        if len(paths) > 300:
+        if len(paths) > 150:
             print(head_field.T)
             print(food_field.T)
             print((head_field + food_field).T)
