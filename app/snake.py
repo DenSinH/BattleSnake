@@ -195,8 +195,8 @@ class Game(object):
                     if (nxt[0], nxt[1]) in self.food:
                         food_found.append((nxt[0], nxt[1]))
                     if np.all(nxt >= 0) and np.all(nxt < np.shape(field)):
-                        if dist < field[nxt]:
-                            field[nxt] = dist
+                        if dist < field[nxt[0], nxt[1]]:
+                            field[nxt[0], nxt[1]] = dist
                             next_generation.append(current)
 
                 dist += 1
