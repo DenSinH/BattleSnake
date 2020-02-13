@@ -107,6 +107,7 @@ class Game(object):
                     nxt = current + direction
                     if (nxt[0], nxt[1]) in target:  # todo: food - components smaller than self.you
                         target_found.add((nxt[0], nxt[1]))
+                        field[nxt[0], nxt[1]] = dist
                     elif np.all(nxt >= 0) and np.all(nxt < np.shape(field)):
                         if dist < field[nxt[0], nxt[1]]:
                             field[nxt[0], nxt[1]] = dist
@@ -189,7 +190,8 @@ class Game(object):
         if len(self.food) == 0:
             return "left"
 
-        field = (self.width * self.height + 1) * np.ones((self.width, self.height))
+        inf = self.width * self.height + 1
+        field = inf * np.ones((self.width, self.height))
         for snake in self.snakes + [self.you]:
             rows, cols = zip(*snake.body)
             field[rows, cols] = -1
@@ -201,6 +203,7 @@ class Game(object):
 
         print(field.T)
         print(food_field.T)
+        print(field.T + food_field.T)
 
 
 
