@@ -222,11 +222,10 @@ class Game(object):
             if any(manhattan(snake.head, food) == 1 for snake in self.snakes):
                 allowed_food.remove(food)
 
-        # no food case:
+        # todo: no food case:
         if len(allowed_food) == 0:
             return self.no_food(components)
 
-        # todo: set squares next to larger/equal snakes as -1
         inf = self.width * self.height + 1
         head_field = inf * np.ones((self.width, self.height))
         for snake in self.snakes + [self.you]:
@@ -275,16 +274,20 @@ class Game(object):
             if len(paths) == 1:
                 return paths[0].get()
 
-        # todo: dont find all paths, assing scores to squares and find best path among them
-        # todo: still too many paths
+            # if there are too many allowed squares, just find the best move after one generation
+            elif np.count_nonzero(allowed_squares) >= 30:
+                return max(paths, key=self.score).get()
+
         print(len(paths), "PATHS FOUND TO FOOD")
-        print(np.count_nonzero(allowed_squares))
+        print(np.count_nonzero(allowed_squares), "ALLOWED SQUARES")
 
         best = max(paths, key=self.score)
-        return best.get()
 
-        # todo: flow actual Path()s such that field[end] always increases and food_field[end] always decreases to
-        # todo: find all paths
+        if self.score(best) == -INFINITY:
+            print("WONT MOVE NEXT TO BETTER SNAKES HEAD")
+            return self.no_food(components)
+
+        return best.get()
 
 
 def make_move(data):
