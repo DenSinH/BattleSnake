@@ -278,12 +278,7 @@ class Game(object):
         # todo: dont find all paths, assing scores to squares and find best path among them
         # todo: still too many paths
         print(len(paths), "PATHS FOUND TO FOOD")
-        if len(paths) > 150:
-            print(head_field.T)
-            print(food_field.T)
-            print((head_field + food_field).T)
-            print(allowed_squares.T)
-            print(np.count_nonzero(allowed_squares))
+        print(np.count_nonzero(allowed_squares))
 
         best = max(paths, key=self.score)
         return best.get()
