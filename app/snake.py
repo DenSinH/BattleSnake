@@ -230,12 +230,12 @@ class Game(object):
                     else:
 
                         next_end = (current.end[0] + direction[0], current.end[1] + direction[1])
-                        # have to move away from the heads original position
 
-                        if head_field[next_end] > head_field[current.end] and food_field[next_end] < food_field[current.end]:
+                        # moving into borders or other snakes is not allowed
+                        if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
 
-                            # moving into borders or other snakes is not allowed
-                            if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
+                            # have to move away from the heads original position
+                            if head_field[next_end] > head_field[current.end] and food_field[next_end] < food_field[current.end]:
                                 for snake in self.snakes + [self.you]:
                                     if next_end in snake.body:
                                         break
