@@ -187,7 +187,7 @@ class Game(object):
         while generation and not food_found:
 
             generation_size = len(generation)
-            for i in range(generation_size) and not food_found:
+            for i in range(generation_size):
                 current = generation.pop(0)
 
                 for direction in dirs:
@@ -200,6 +200,9 @@ class Game(object):
                             generation.append(current)
 
             dist += 1
+
+            if food_found:
+                break
 
         print(field)
         print(food_found)
