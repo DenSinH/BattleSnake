@@ -189,25 +189,59 @@ class Game(object):
 
     def move(self):
         # todo: find longest path if in small connected component
+        components = self.components()
+        allowed_food = set(self.food)
+
+        for component in components:
+            if len(component) < len(self.you):
+                allowed_food -= component
+
         # no food case:
-        if len(self.food) == 0:
+        if len(allowed_food) == 0:
             return "left"
 
         inf = self.width * self.height + 1
-        field = inf * np.ones((self.width, self.height))
+        head_field = inf * np.ones((self.width, self.height))
         for snake in self.snakes + [self.you]:
             rows, cols = zip(*snake.body)
-            field[rows, cols] = -1
+            head_field[rows, cols] = -1
 
-        food_field = np.array(field)
+        food_field = np.array(head_field)
 
-        field, food_found = self.flow([np.array(self.you.head)], self.food, field)
+        head_field, food_found = self.flow([np.array(self.you.head)], allowed_food, head_field)
         food_field, _ = self.flow([np.array(food) for food in food_found], {self.you.head}, food_field)
 
-        print(field.T)
-        print(food_field.T)
-        print(field.T + food_field.T)
+        paths = [Path(self.you.head)]
 
+        while paths and paths[0].end not in allowed_food:
+
+            for i in range(len(paths)):
+                current = paths.pop(0)
+
+                for direction in dirs:
+                    # moving backwards is not allowed
+                    if current.prevdir == (-direction[0], -direction[1]):
+                        pass
+                    else:
+
+                        next_end = (current.end[0] + direction[0], current.end[1] + direction[1])
+                        # have to move away from the heads original position
+
+                        if head_field[next_end] > head_field[current.end] and food_field[next_end] < food_field[current.end]:
+
+                            # moving into borders or other snakes is not allowed
+                            if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
+                                for snake in self.snakes + [self.you]:
+                                    if next_end in snake.body:
+                                        break
+                                else:
+                                    paths.append(current.move(direction))
+        
+        for path in paths:
+            print(path)
+
+        # todo: flow actual Path()s such that field[end] always increases and food_field[end] always decreases to
+        # todo: find all paths
 
 
 def make_move(data):
