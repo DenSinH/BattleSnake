@@ -209,6 +209,11 @@ class Game(object):
         food_field = np.array(head_field)
 
         head_field, food_found = self.flow([np.array(self.you.head)], allowed_food, head_field)
+
+        # todo: no reachable food case
+        if not food_found:
+            return "left"
+
         food_field, _ = self.flow([np.array(food) for food in food_found], {self.you.head}, food_field)
 
         paths = [Path(self.you.head)]
@@ -236,9 +241,10 @@ class Game(object):
                                         break
                                 else:
                                     paths.append(current.move(direction))
-        
-        for path in paths:
-            print(path)
+
+        print(len(paths), "PATHS FOUND TO FOOD")
+        best = max(paths, self.score)
+        return best.get()
 
         # todo: flow actual Path()s such that field[end] always increases and food_field[end] always decreases to
         # todo: find all paths
