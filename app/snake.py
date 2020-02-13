@@ -157,6 +157,31 @@ class Game(object):
 
         return s
 
+    def no_food(self, components):
+        choices = {}
+        for direction in dirs:
+            nxt = (self.you.head[0] + direction[0], self.you.head[1] + direction[1])
+
+            if any(nxt in snake.body for snake in self.snakes + [self.you]):
+                continue
+
+            if any(manhattan(nxt, snake.head) == 1 for snake in self.snakes):
+                choices[dirs[direction]] = -INFINITY
+                continue
+
+            for component in components:
+                if nxt in component:
+                    choices[dirs[direction]] = len(component)
+                    break
+
+            if any(manhattan(nxt, part) == 1 for snake in self.snakes + [self.you] for part in snake.body if part != self.you.head):
+                choices[dirs[direction]] += 10
+
+        if len(choices) == 0:
+            return random.choice(list(dirs.values()))
+
+        return max(choices, key=lambda i: choices[i])
+
     def components(self, *extra):
         walls = {part for snake in self.snakes for part in snake.body} | set(self.you.body) | set(extra)
         components = []
@@ -180,14 +205,6 @@ class Game(object):
 
         return components
 
-    def find_best(self, paths):
-        """
-        :param paths: Path[]
-        :return: Path
-        """
-
-        return max(paths, key=self.score)
-
     def move(self):
         # todo: find longest path if in small connected component
         components = self.components()
@@ -204,7 +221,7 @@ class Game(object):
 
         # no food case:
         if len(allowed_food) == 0:
-            return random.choice(list(dirs.values()))
+            return self.no_food(components)
 
         inf = self.width * self.height + 1
         head_field = inf * np.ones((self.width, self.height))
@@ -218,7 +235,7 @@ class Game(object):
 
         # todo: no reachable food case
         if not food_found:
-            return random.choice(list(dirs.values()))
+            return self.no_food(components)
 
         food_field, _ = self.flow([np.array(food) for food in food_found], {self.you.head}, food_field)
 
