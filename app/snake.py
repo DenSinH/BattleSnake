@@ -204,7 +204,7 @@ class Game(object):
 
         # no food case:
         if len(allowed_food) == 0:
-            return random.choice(dirs.values())
+            return random.choice(list(dirs.values()))
 
         inf = self.width * self.height + 1
         head_field = inf * np.ones((self.width, self.height))
@@ -218,7 +218,7 @@ class Game(object):
 
         # todo: no reachable food case
         if not food_found:
-            return random.choice(dirs.values())
+            return random.choice(list(dirs.values()))
 
         food_field, _ = self.flow([np.array(food) for food in food_found], {self.you.head}, food_field)
 

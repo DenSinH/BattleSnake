@@ -68,6 +68,9 @@ def move():
     t = time.time() - t0
     print("moving", direction, "in turn", data["turn"])
     print("decision made in", t, "seconds")
+    if t > 0.45:
+        for i in range(5):
+            print("WARNING, TOO SLOW")
 
     return move_response(direction) or "up"
 
