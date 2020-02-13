@@ -239,9 +239,11 @@ class Game(object):
 
         allowed_squares = (head_field + food_field) == food_field[self.you.head]
 
-        print(head_field + food_field)
+        print(head_field.T)
+        print(food_field.T)
+        print((head_field + food_field).T)
         print(food_field[self.you.head])
-        print(allowed_squares)
+        print(allowed_squares.T)
 
         # todo: no reachable food case
         if not food_found:
