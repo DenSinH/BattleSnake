@@ -85,21 +85,36 @@ class Game(object):
 
         self.you = Snake(**you)
 
-    def flow(self, start):
-        for direction in dirs:
-            # moving backwards is not allowed
-            if start.prevdir == (-direction[0], -direction[1]):
-                pass
-            else:
-                next_end = (start.end[0] + direction[0], start.end[1] + direction[1])
+    def flow(self, generation, target, field):
+        """
+        :param generation: np.array([int, int])[]
+        :param target:  set((int, int))
+        :param field: np.2darray()
+        :return: np.2darray, [(int, int)]
+        """
 
-                # moving into borders or other snakes is not allowed
-                if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
-                    for snake in self.snakes + [self.you]:
-                        if next_end in snake.body:
-                            break
-                    else:
-                        yield start.move(direction)
+        dist = 1
+
+        target_found = set()
+
+        while generation and not target_found:
+
+            generation_size = len(generation)
+            for i in range(generation_size):
+                current = generation.pop(0)
+
+                for direction in dirs:
+                    nxt = current + direction
+                    if (nxt[0], nxt[1]) in target:  # todo: food - components smaller than self.you
+                        target_found.add((nxt[0], nxt[1]))
+                    elif np.all(nxt >= 0) and np.all(nxt < np.shape(field)):
+                        if dist < field[nxt[0], nxt[1]]:
+                            field[nxt[0], nxt[1]] = dist
+                            generation.append(nxt)
+
+            dist += 1
+
+        return field, target_found
 
     def score(self, path):
         s = 0
@@ -132,8 +147,8 @@ class Game(object):
                 s += 5
 
             # snake likes to have options
-            if len(path) > 1:
-                s += 5 * sum([1 for i in self.flow(Path(path[1]))])
+            # if len(path) > 1:
+            #     s += 5 * sum([1 for i in self.flow(Path(path[1]))])
 
         return s
 
@@ -172,40 +187,20 @@ class Game(object):
         # todo: find longest path if in small connected component
         # no food case:
         if len(self.food) == 0:
-            return max(self.flow(Path(self.you.head)), key=self.score).get()
+            return "left"
 
         field = (self.width * self.height + 1) * np.ones((self.width, self.height))
         for snake in self.snakes + [self.you]:
             rows, cols = zip(*snake.body)
             field[rows, cols] = -1
 
-        dist = 1
-        generation = [np.array(self.you.head)]
+        food_field = np.array(field)
 
-        food_found = []
-
-        while generation and not food_found:
-
-            generation_size = len(generation)
-            for i in range(generation_size):
-                current = generation.pop(0)
-
-                for direction in dirs:
-                    nxt = current + direction
-                    if (nxt[0], nxt[1]) in self.food:  # todo: food - components smaller than self.you
-                        food_found.append((nxt[0], nxt[1]))
-                    elif np.all(nxt >= 0) and np.all(nxt < np.shape(field)):
-                        if dist < field[nxt[0], nxt[1]]:
-                            field[nxt[0], nxt[1]] = dist
-                            generation.append(nxt)
-
-            dist += 1
-
-            if food_found:
-                break
+        field, food_found = self.flow([np.array(self.you.head)], self.food, field)
+        food_field, _ = self.flow([np.array(food) for food in food_found], {self.you.head}, food_field)
 
         print(field.T)
-        print(food_found)
+        print(food_field.T)
 
 
 
