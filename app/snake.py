@@ -282,7 +282,8 @@ class Game(object):
             print(head_field.T)
             print(food_field.T)
             print((head_field + food_field).T)
-            print(allowed_squares)
+            print(allowed_squares.T)
+            print(np.count_nonzero(allowed_squares))
 
         best = max(paths, key=self.score)
         return best.get()
