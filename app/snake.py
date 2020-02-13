@@ -243,7 +243,7 @@ class Game(object):
                                     paths.append(current.move(direction))
 
         print(len(paths), "PATHS FOUND TO FOOD")
-        best = max(paths, self.score)
+        best = max(paths, key=self.score)
         return best.get()
 
         # todo: flow actual Path()s such that field[end] always increases and food_field[end] always decreases to
