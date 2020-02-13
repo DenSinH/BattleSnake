@@ -226,6 +226,7 @@ class Game(object):
         if len(allowed_food) == 0:
             return self.no_food(components)
 
+        # todo: set squares next to larger/equal snakes as -1
         inf = self.width * self.height + 1
         head_field = inf * np.ones((self.width, self.height))
         for snake in self.snakes + [self.you]:
@@ -237,6 +238,10 @@ class Game(object):
         head_field, food_found = self.flow([np.array(self.you.head)], allowed_food, head_field)
 
         allowed_squares = (head_field + food_field) == food_field[self.you.head]
+
+        print(head_field + food_field)
+        print(food_field[self.you.head])
+        print(allowed_squares)
 
         # todo: no reachable food case
         if not food_found:
