@@ -197,14 +197,12 @@ class Game(object):
                     elif np.all(nxt >= 0) and np.all(nxt < np.shape(field)):
                         if dist < field[nxt[0], nxt[1]]:
                             field[nxt[0], nxt[1]] = dist
-                            generation.append(current)
+                            generation.append(nxt)
 
             dist += 1
 
             if food_found:
                 break
-
-            print(generation)
 
         print(field.T)
         print(food_found)
