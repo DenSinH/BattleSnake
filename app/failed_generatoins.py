@@ -1,4 +1,4 @@
-import numpy as np
+from pprint import pprint
 
 
 dirs = {
@@ -174,11 +174,64 @@ class Game(object):
         if len(self.food) == 0:
             return max(self.flow(Path(self.you.head)), key=self.score).get()
 
-        field = np.zeros((self.width, self.height))
-        for snake in self.snakes + [self.you]:
-            field[snake.body] = -1
+        found = {self.you.head: 1}
+        generation = {(self.you.head, None): [Path(self.you.head)]}
+        next_generation = {}
+        components = self.components()
 
-        print(field)
+        print("COMPONENTS BEFORE", [len(component) for component in components])
+
+        # find best path among shortest paths
+        shortest_paths = []
+
+        # flow outward to find closest food and move along that path
+        while generation:
+            print(len(generation))
+
+            for start, prevdir in generation:
+
+                for extension in self.flow(Path(start, prevdir=prevdir)):
+
+                    if extension.end in self.food:
+
+                        # empty component
+                        for component in components:
+                            # todo: in small boards/late game, any component might be smaller than the snake
+                            if extension.end in component and len(component) < len(self.you):
+                                print(f"Did not allow path to {extension.end} because component too small")
+                                break
+                        else:
+                            shortest_paths += [path + extension for path in generation[(start, prevdir)]]
+
+                    for path in generation[(start, prevdir)]:
+                        if extension.end not in found or len(path) + 1 <= found[extension.end]:
+                            if (extension.end, extension.prevdir) not in next_generation:
+                                next_generation[(extension.end, extension.prevdir)] = []
+                            next_generation[(extension.end, extension.prevdir)].append(path + extension)
+
+            # only do best path if it is not dangerous
+            if shortest_paths:
+                for path in shortest_paths:
+                    print(path.path)
+                best = self.find_best(shortest_paths)
+                if self.score(best) > -INFINITY:
+                    return best.get()
+                shortest_paths = []
+
+            generation = next_generation
+            next_generation = {}
+
+        # todo: no path to food, choose largest area, largest path?
+        choices = {}
+        for next_path in self.flow(Path(self.you.head)):
+            choices[next_path.get()] = 0
+
+            # find largest area to go to
+            for component in components:
+                if next_path.end in component and len(component) < len(self.you):
+                    choices[next_path.get()] += len(component) - len(self.you)
+
+        return max(choices, key=lambda i: choices[i])
 
 
 def make_move(data):
