@@ -236,6 +236,8 @@ class Game(object):
 
         head_field, food_found = self.flow([np.array(self.you.head)], allowed_food, head_field)
 
+        allowed_squares = (head_field + food_field) == food_field[self.you.head]
+
         # todo: no reachable food case
         if not food_found:
             return self.no_food(components)
@@ -268,6 +270,10 @@ class Game(object):
                                 else:
                                     paths.append(current.move(direction))
 
+            # if there is only one path after at least 1 generation, then there is only once choice
+            if len(paths) == 1:
+                return paths[0].get()
+
         # todo: dont find all paths, assing scores to squares and find best path among them
         # todo: still too many paths
         print(len(paths), "PATHS FOUND TO FOOD")
@@ -275,7 +281,7 @@ class Game(object):
             print(head_field.T)
             print(food_field.T)
             print((head_field + food_field).T)
-
+            print(allowed_squares)
 
         best = max(paths, key=self.score)
         return best.get()
