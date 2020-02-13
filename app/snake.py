@@ -204,7 +204,9 @@ class Game(object):
             if food_found:
                 break
 
-        print(field)
+            print(generation)
+
+        print(field.T)
         print(food_found)
 
 
