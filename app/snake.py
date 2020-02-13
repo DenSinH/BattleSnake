@@ -181,28 +181,25 @@ class Game(object):
 
         dist = 1
         generation = [np.array(self.you.head)]
-        next_generation = []
 
         food_found = []
 
         while generation and not food_found:
 
-            while generation and not food_found:
+            generation_size = len(generation)
+            for i in range(generation_size) and not food_found:
                 current = generation.pop(0)
 
                 for direction in dirs:
                     nxt = current + direction
-                    if (nxt[0], nxt[1]) in self.food:
+                    if (nxt[0], nxt[1]) in self.food:  # todo: food - components smaller than self.you
                         food_found.append((nxt[0], nxt[1]))
-                    if np.all(nxt >= 0) and np.all(nxt < np.shape(field)):
+                    elif np.all(nxt >= 0) and np.all(nxt < np.shape(field)):
                         if dist < field[nxt[0], nxt[1]]:
                             field[nxt[0], nxt[1]] = dist
-                            next_generation.append(current)
+                            generation.append(current)
 
-                dist += 1
-
-            generation = next_generation
-            next_generation = []
+            dist += 1
 
         print(field)
         print(food_found)
