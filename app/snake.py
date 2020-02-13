@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 
 dirs = {
@@ -190,15 +191,20 @@ class Game(object):
     def move(self):
         # todo: find longest path if in small connected component
         components = self.components()
+
         allowed_food = set(self.food)
 
         for component in components:
             if len(component) < len(self.you):
                 allowed_food -= component
 
+        for food in list(allowed_food):
+            if any(manhattan(snake.head, food) == 1 for snake in self.snakes):
+                allowed_food.remove(food)
+
         # no food case:
         if len(allowed_food) == 0:
-            return "left"
+            return random.choice(dirs.values())
 
         inf = self.width * self.height + 1
         head_field = inf * np.ones((self.width, self.height))
@@ -212,7 +218,7 @@ class Game(object):
 
         # todo: no reachable food case
         if not food_found:
-            return "left"
+            return random.choice(dirs.values())
 
         food_field, _ = self.flow([np.array(food) for food in food_found], {self.you.head}, food_field)
 
@@ -242,6 +248,8 @@ class Game(object):
                                 else:
                                     paths.append(current.move(direction))
 
+        # todo: dont find all paths, assing scores to squares and find best path among them
+        # todo: still too many paths
         print(len(paths), "PATHS FOUND TO FOOD")
         best = max(paths, key=self.score)
         return best.get()
