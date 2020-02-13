@@ -77,7 +77,7 @@ class Game(object):
     def __init__(self, height, width, food, snakes, you, **kwargs):
         self.height = height
         self.width = width
-        self.food = [(pos["x"], pos["y"]) for pos in food]
+        self.food = {(pos["x"], pos["y"]) for pos in food}
         self.snakes = []
         for snake in snakes:
             if snake["id"] != you["id"]:
@@ -174,12 +174,39 @@ class Game(object):
         if len(self.food) == 0:
             return max(self.flow(Path(self.you.head)), key=self.score).get()
 
-        field = np.zeros((self.width, self.height))
+        field = (self.width * self.height + 1) * np.ones((self.width, self.height))
         for snake in self.snakes + [self.you]:
             rows, cols = zip(*snake.body)
             field[rows, cols] = -1
 
+        dist = 1
+        generation = [np.array(self.you.head)]
+        next_generation = []
+
+        food_found = []
+
+        while generation and not food_found:
+
+            while generation and not food_found:
+                current = generation.pop(0)
+
+                for direction in dirs:
+                    nxt = current + direction
+                    if (nxt[0], nxt[1]) in self.food:
+                        food_found.append((nxt[0], nxt[1]))
+                    if np.all(nxt >= 0) and np.all(nxt < np.shape(field)):
+                        if dist < field[nxt]:
+                            field[nxt] = dist
+                            next_generation.append(current)
+
+                dist += 1
+
+            generation = next_generation
+            next_generation = []
+
         print(field)
+        print(food_found)
+
 
 
 def make_move(data):
