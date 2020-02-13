@@ -97,6 +97,9 @@ class Game(object):
 
         target_found = set()
 
+        rows, cols = zip(*generation)
+        field[rows, cols] = 0
+
         while generation and not target_found:
 
             generation_size = len(generation)
