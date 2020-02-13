@@ -176,7 +176,8 @@ class Game(object):
 
         field = np.zeros((self.width, self.height))
         for snake in self.snakes + [self.you]:
-            field[snake.body] = -1
+            rows, cols = zip(*snake.body)
+            field[rows, cols] = -1
 
         print(field)
 
