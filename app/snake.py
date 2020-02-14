@@ -86,6 +86,29 @@ class Game(object):
 
         self.you = Snake(**you)
 
+    def components(self, *extra):
+        walls = {part for snake in self.snakes for part in snake.body} | set(self.you.body) | set(extra)
+        components = []
+
+        for x in range(self.width):
+            for y in range(self.height):
+                point = (x, y)
+                if point in walls:
+                    continue
+
+                new_components = []
+                current = {(x, y)}
+
+                for component in components:
+                    if any(manhattan(point, p) == 1 for p in component):
+                        current |= component
+                    else:
+                        new_components.append(component)
+
+                components = new_components + [current]
+
+        return components
+
     def flow(self, generation, target, field):
         """
         :param generation: np.array([int, int])[]
@@ -160,6 +183,15 @@ class Game(object):
     def score(self, path, score_field):
         return sum(score_field[spot] for spot in path)
 
+    def get_best(self, paths, allowed_squares):
+        # assign score values to allowed_squares and calculate score
+        score_field = np.zeros((self.width, self.height))
+
+        for spot in zip(*np.nonzero(allowed_squares)[:2]):
+            score_field[spot] = self.score_spot(spot)
+
+        return max(paths, key=lambda p: self.score(p, score_field))
+
     def no_food(self, components):
         choices = {}
         for direction in dirs:
@@ -187,29 +219,6 @@ class Game(object):
             return random.choice(list(dirs.values()))
 
         return max(choices, key=lambda i: choices[i])
-
-    def components(self, *extra):
-        walls = {part for snake in self.snakes for part in snake.body} | set(self.you.body) | set(extra)
-        components = []
-
-        for x in range(self.width):
-            for y in range(self.height):
-                point = (x, y)
-                if point in walls:
-                    continue
-
-                new_components = []
-                current = {(x, y)}
-
-                for component in components:
-                    if any(manhattan(point, p) == 1 for p in component):
-                        current |= component
-                    else:
-                        new_components.append(component)
-
-                components = new_components + [current]
-
-        return components
 
     def move(self):
         # todo: find longest path if in small connected component
@@ -284,7 +293,7 @@ class Game(object):
 
             # if there are too many allowed squares, just find the best move after one generation
             elif np.count_nonzero(allowed_squares) >= 30:
-                return max(paths, key=self.score).get()
+                return self.get_best(paths, allowed_squares).get()
 
         print(len(paths), "PATHS FOUND TO FOOD")
         print(np.count_nonzero(allowed_squares), "ALLOWED SQUARES")
@@ -293,14 +302,7 @@ class Game(object):
             print("WONT MOVE NEXT TO BETTER SNAKES HEAD")
             return self.no_food(components)
 
-        # todo: assign score values to allowed_squares and calculate score that way
-        score_field = np.zeros((self.width, self.height))
-
-        for spot in zip(*np.nonzero(allowed_squares)[:2]):
-            score_field[spot] = self.score_spot(spot)
-
-        best = max(paths, key=lambda p: self.score(p, score_field))
-
+        best = self.get_best(paths, allowed_squares)
         return best.get()
 
 
