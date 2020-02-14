@@ -121,41 +121,44 @@ class Game(object):
 
         return field, target_found
 
-    def score(self, path):
+    def score_spot(self, spot):
+
         s = 0
-        for spot in path:
-            # we dont want to move our head next to a stronger snakes head
-            if any(manhattan(path.first_head(), snake.head) == 1
-                   and snake.strength() >= self.you.strength() for snake in self.snakes):
-                return -INFINITY
 
-            # snake likes to be next to game border if it is not next to another snake
-            if any(manhattan(spot, part) == 1 for snake in self.snakes for part in snake.body):
-                if spot[0] in [0, self.width - 1]:
-                    s -= 3
+        if any(manhattan(spot, snake.head) == 1
+               and snake.strength() >= self.you.strength() for snake in self.snakes):
+            return -INFINITY
 
-                elif spot[1] in [0, self.height - 1]:
-                    s -= 3
+        # snake likes to be next to game border if it is not next to another snake
+        if any(manhattan(spot, part) == 1 for snake in self.snakes for part in snake.body):
+            if spot[0] in [0, self.width - 1]:
+                s -= 3
 
-                else:
-                    s += 3
+            elif spot[1] in [0, self.height - 1]:
+                s -= 3
 
             else:
-                if spot[0] in [0, self.width - 1]:
-                    s += 1
+                s += 3
 
-                elif spot[1] in [0, self.height - 1]:
-                    s += 1
+        else:
+            if spot[0] in [0, self.width - 1]:
+                s += 1
 
-            # snake likes to be next to own body even more
-            if any(manhattan(spot, part) == 1 for part in self.you.body):
-                s += 5
+            elif spot[1] in [0, self.height - 1]:
+                s += 1
 
-            # snake likes to have options
-            # if len(path) > 1:
-            #     s += 5 * sum([1 for i in self.flow(Path(path[1]))])
+        # snake likes to be next to own body even more
+        if any(manhattan(spot, part) == 1 for part in self.you.body):
+            s += 5
+
+        # snake likes to have options
+        # if len(path) > 1:
+        #     s += 5 * sum([1 for i in self.flow(Path(path[1]))])
 
         return s
+
+    def score(self, path, score_field):
+        return sum(score_field[spot] for spot in path)
 
     def no_food(self, components):
         choices = {}
@@ -254,21 +257,26 @@ class Game(object):
                 for direction in dirs:
                     # moving backwards is not allowed
                     if current.prevdir == (-direction[0], -direction[1]):
-                        pass
-                    else:
+                        continue
 
-                        next_end = (current.end[0] + direction[0], current.end[1] + direction[1])
+                    next_end = (current.end[0] + direction[0], current.end[1] + direction[1])
 
-                        # moving into borders or other snakes is not allowed
-                        if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
+                    # only check if first move is next to other snake's head first generation
+                    if current.end == self.you.head:
+                        if any(manhattan(next_end, snake.head) == 1
+                               and snake.strength() >= self.you.strength() for snake in self.snakes):
+                            continue
 
-                            # have to move away from the heads original position
-                            if head_field[next_end] > head_field[current.end] and food_field[next_end] < food_field[current.end]:
-                                for snake in self.snakes + [self.you]:
-                                    if next_end in snake.body:
-                                        break
-                                else:
-                                    paths.append(current.move(direction))
+                    # moving into borders or other snakes is not allowed
+                    if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
+
+                        # have to move away from the heads original position
+                        if head_field[next_end] > head_field[current.end] and food_field[next_end] < food_field[current.end]:
+                            for snake in self.snakes + [self.you]:
+                                if next_end in snake.body:
+                                    break
+                            else:
+                                paths.append(current.move(direction))
 
             # if there is only one path after at least 1 generation, then there is only once choice
             if len(paths) == 1:
@@ -281,11 +289,17 @@ class Game(object):
         print(len(paths), "PATHS FOUND TO FOOD")
         print(np.count_nonzero(allowed_squares), "ALLOWED SQUARES")
 
-        best = max(paths, key=self.score)
-
-        if self.score(best) == -INFINITY:
+        if len(paths) == 0:
             print("WONT MOVE NEXT TO BETTER SNAKES HEAD")
             return self.no_food(components)
+
+        # todo: assign score values to allowed_squares and calculate score that way
+        score_field = np.zeros((self.width, self.height))
+
+        for spot in zip(*np.nonzero(allowed_squares)[:2]):
+            score_field[spot] = self.score_spot(spot)
+
+        best = max(paths, key=lambda p: self.score(p, score_field))
 
         return best.get()
 
