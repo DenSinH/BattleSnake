@@ -130,7 +130,7 @@ class Game(object):
                 return -INFINITY
 
             # snake likes to be next to game border if it is not next to another snake
-            if any(spot in snake.body for snake in self.snakes):
+            if any(manhattan(spot, part) == 1 for snake in self.snakes for part in snake.body):
                 if spot[0] in [0, self.width - 1]:
                     s -= 3
 
@@ -148,7 +148,7 @@ class Game(object):
                     s += 1
 
             # snake likes to be next to own body even more
-            if spot in self.you.body:
+            if any(manhattan(spot, part) == 1 for part in self.you.body):
                 s += 5
 
             # snake likes to have options
