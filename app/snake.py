@@ -270,23 +270,18 @@ class Game(object):
 
         for next_component in next_components:
 
-            for component in components:
-                if next_component & component:
-                    if len(component) < len(self.you):
-                        if len(next_component) < len(self.you) / 2:
-                            rows, cols = zip(*next_component)
-                            head_field[rows, cols] = -1
+            if len(next_component) < len(self.you):
 
-                            allowed_food -= next_component
-
-                        semi_allowed_food -= component
-
-                    elif len(next_component) < len(self.you) / 2:
-                        rows, cols = zip(*next_component)
-                        head_field[rows, cols] = -1
-
-                        allowed_food -= next_component
+                for component in components:
+                    if next_component & component:
+                        if len(component) < len(self.you):
+                            semi_allowed_food -= component
                     break
+
+                rows, cols = zip(*next_component)
+                head_field[rows, cols] = -1
+
+                allowed_food -= next_component
 
         # todo: no food case:
         if len(allowed_food) == 0:
