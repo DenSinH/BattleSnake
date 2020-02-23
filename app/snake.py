@@ -181,10 +181,10 @@ class Game(object):
 
         else:
             if spot[0] in [0, self.width - 1]:
-                s += 1
+                s -= 1
 
             elif spot[1] in [0, self.height - 1]:
-                s += 1
+                s -= 1
 
         # snake likes to be next to own body even more
         if any(manhattan(spot, part) == 1 for part in self.you.body):
