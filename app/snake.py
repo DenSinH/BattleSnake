@@ -151,6 +151,9 @@ class Game(object):
         for snake in self.snakes:
             if manhattan(spot, snake.head) == 1:
                 if snake.strength() >= self.you.strength():
+                    # other is likely to go there
+                    if spot in self.food:
+                        return -INFINITY**2
                     return -INFINITY
                 else:
                     # slight bit of aggression
