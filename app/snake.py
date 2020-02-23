@@ -254,28 +254,38 @@ class Game(object):
             if len(component) < len(self.you):
                 semi_allowed_food -= component
 
-        for food in list(semi_allowed_food):
-            if any(manhattan(snake.head, food) == 1 and snake.strength() >= self.you.strength()
-                   for snake in self.snakes):
-                semi_allowed_food.remove(food)
-
-        allowed_food = set(semi_allowed_food)
-
         # prepare field
         inf = self.width * self.height + 1
         head_field = inf * np.ones((self.width, self.height))
+        
+        # snakes are likely to grab food in a straight line from them
+        for food in self.food:
+            for snake in self.snakes:
+                if snake.strength() >= self.you.strength():
+                    if food[0] == snake.head[0] and not any((food[0], i) in _snake.body
+                                                            for _snake in self.snakes
+                                                            for i in range(min(food[1], snake.head[1]) + 1,
+                                                                           max(food[1], snake.head[1]))):
+
+                        semi_allowed_food.discard(food)
+                        head_field[food[0], min(food[1], snake.head[1]):max(food[1], snake.head[1]) + 1] = -1
+
+                    elif food[1] == snake.head[1] and not any((i, food[1]) in _snake.body
+                                                            for _snake in self.snakes
+                                                            for i in range(min(food[0], snake.head[0]) + 1,
+                                                                           max(food[0], snake.head[0]))):
+
+                        semi_allowed_food.discard(food)
+                        head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
+
+        allowed_food = set(semi_allowed_food)
+
         next_components = self.components(*[(snake.head[0] + direction[0], snake.head[1] + direction[1])
                                             for direction in dirs for snake in self.snakes])
 
         for snake in self.snakes + [self.you]:
             rows, cols = zip(*snake.body)
             head_field[rows, cols] = -1
-
-        # snakes next to food are likely to grab it
-        for food in self.food:
-            if any(manhattan(snake.head, food) == 1 and snake.strength() >= self.you.strength()
-                   for snake in self.snakes):
-                head_field[food] = -1
 
         # don't allow food that other snakes could cut off
         for next_component in next_components:
