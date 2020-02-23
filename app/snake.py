@@ -261,25 +261,22 @@ class Game(object):
         # snakes are likely to grab food in a straight line from them
         for food in self.food:
             for snake in self.snakes:
-                if snake.strength() >= self.you.strength():
+                if snake.strength() >= self.you.strength() or manhattan(food, snake.head) <= manhattan(food, self.you.head):
+                    if food[0] == snake.head[0] and not any((food[0], i) in _snake.body
+                                                            for _snake in self.snakes
+                                                            for i in range(min(food[1], snake.head[1]) + 1,
+                                                                           max(food[1], snake.head[1]))):
 
-                    # I might be closer already
-                    if manhattan(food, snake.head) <= manhattan(food, self.you.head):
-                        if food[0] == snake.head[0] and not any((food[0], i) in _snake.body
-                                                                for _snake in self.snakes
-                                                                for i in range(min(food[1], snake.head[1]) + 1,
-                                                                               max(food[1], snake.head[1]))):
+                        semi_allowed_food.discard(food)
+                        head_field[food[0], min(food[1], snake.head[1]):max(food[1], snake.head[1]) + 1] = -1
 
-                            semi_allowed_food.discard(food)
-                            head_field[food[0], min(food[1], snake.head[1]):max(food[1], snake.head[1]) + 1] = -1
+                    elif food[1] == snake.head[1] and not any((i, food[1]) in _snake.body
+                                                              for _snake in self.snakes
+                                                              for i in range(min(food[0], snake.head[0]) + 1,
+                                                                             max(food[0], snake.head[0]))):
 
-                        elif food[1] == snake.head[1] and not any((i, food[1]) in _snake.body
-                                                                  for _snake in self.snakes
-                                                                  for i in range(min(food[0], snake.head[0]) + 1,
-                                                                                 max(food[0], snake.head[0]))):
-
-                            semi_allowed_food.discard(food)
-                            head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
+                        semi_allowed_food.discard(food)
+                        head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
 
         allowed_food = set(semi_allowed_food)
 
@@ -308,11 +305,13 @@ class Game(object):
 
         # todo: no food case:
         if len(allowed_food) == 0:
-            # if len(semi_allowed_food) > 0:
-            #     allowed_food = semi_allowed_food
-            # else:
-            print("NO FOOD ALLOWED")
-            return self.no_food(components, next_components)
+            if len(semi_allowed_food) > 0 \
+                    and 1.5 * min([manhattan(food, self.you.head) for food in semi_allowed_food]) >= self.you.health:
+                print("LOW ENERGY, ALLOWED SOME FOOD")
+                allowed_food = semi_allowed_food
+            else:
+                print("NO FOOD ALLOWED")
+                return self.no_food(components, next_components)
 
         food_field = np.array(head_field)
 
