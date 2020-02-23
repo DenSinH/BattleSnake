@@ -50,7 +50,7 @@ def start():
     """
     print("STARTING GAME")
 
-    color = "#00FF00"
+    color = "#192821"
 
     return start_response(color)
 
