@@ -262,7 +262,7 @@ class Game(object):
         for food in self.food:
             for snake in self.snakes:
                 if snake.strength() >= self.you.strength():
-                    
+
                     # I might be closer already
                     if manhattan(food, snake.head) <= manhattan(food, self.you.head):
                         if food[0] == snake.head[0] and not any((food[0], i) in _snake.body
@@ -308,11 +308,11 @@ class Game(object):
 
         # todo: no food case:
         if len(allowed_food) == 0:
-            if len(semi_allowed_food) > 0:
-                allowed_food = semi_allowed_food
-            else:
-                print("NO FOOD ALLOWED")
-                return self.no_food(components, next_components)
+            # if len(semi_allowed_food) > 0:
+            #     allowed_food = semi_allowed_food
+            # else:
+            print("NO FOOD ALLOWED")
+            return self.no_food(components, next_components)
 
         food_field = np.array(head_field)
 
