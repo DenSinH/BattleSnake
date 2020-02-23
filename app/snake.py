@@ -277,7 +277,7 @@ class Game(object):
 
                             allowed_food -= next_component
 
-                    elif len(next_component) < len(self.you):
+                    elif len(next_component) < len(self.you) / 2:
                         rows, cols = zip(*next_component)
                         head_field[rows, cols] = -1
 
