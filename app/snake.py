@@ -148,20 +148,33 @@ class Game(object):
 
         s = 0
 
-        if any(manhattan(spot, snake.head) == 1
-               and snake.strength() >= self.you.strength() for snake in self.snakes):
-            return -INFINITY
+        for snake in self.snakes:
+            if manhattan(spot, snake.head) == 1:
+                if snake.strength() >= self.you.strength():
+                    return -INFINITY
+                else:
+                    # slight bit of aggression
+                    s += 10
 
         # snake likes to be next to game border if it is not next to another snake
-        if any(manhattan(spot, part) == 1 for snake in self.snakes for part in snake.body):
-            if spot[0] in [0, self.width - 1]:
-                s -= 3
+        for snake in self.snakes:
+            for part in snake.body:
+                if manhattan(spot, part) == 1:
+                    next_over = (2 * spot[0] - part[0], 2 * spot[1] - part[1])
 
-            elif spot[1] in [0, self.height - 1]:
-                s -= 3
+                    if next_over[0] in [-1, self.width]:
+                        s -= 3
 
-            else:
-                s += 3
+                    elif next_over[1] in [-1, self.height]:
+                        s -= 3
+
+                    elif any(next_over in _snake.body for _snake in self.snakes):
+                        s -= 3
+
+                    else:
+                        s += 3
+
+                    break
 
         else:
             if spot[0] in [0, self.width - 1]:
@@ -244,6 +257,9 @@ class Game(object):
             rows, cols = zip(*snake.body)
             head_field[rows, cols] = -1
 
+        # todo: don't allow components that snakes could cut off with their head (self.components(*other_snake_possible_head_positions))
+        # todo: only if component & old component : old component is not already smaller than head
+
         food_field = np.array(head_field)
 
         head_field, food_found = self.flow([np.array(self.you.head)], allowed_food, head_field)
@@ -292,7 +308,8 @@ class Game(object):
                 return paths[0].get()
 
             # if there are too many allowed squares, just find the best move after one generation
-            elif np.count_nonzero(allowed_squares) >= 30:
+            elif len(paths) > 150 and np.count_nonzero(allowed_squares) >= 30:
+                print("TOO MANY POSSIBILITIES")
                 return self.get_best(paths, allowed_squares).get()
 
         print(len(paths), "PATHS FOUND TO FOOD")
