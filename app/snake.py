@@ -1,7 +1,6 @@
 import numpy as np
 import random
 
-
 dirs = {
     (1, 0): "right",
     (-1, 0): "left",
@@ -153,7 +152,7 @@ class Game(object):
                 if snake.strength() >= self.you.strength():
                     # other is likely to go there
                     if spot in self.food:
-                        return -INFINITY**2
+                        return -INFINITY ** 2
                     return -INFINITY
                 else:
                     # slight bit of aggression
@@ -223,7 +222,8 @@ class Game(object):
             if any(nxt in snake.body for snake in self.snakes + [self.you]):
                 continue
 
-            if any(manhattan(nxt, snake.head) == 1 and snake.strength() >= self.you.strength() for snake in self.snakes):
+            if any(manhattan(nxt, snake.head) == 1 and snake.strength() >= self.you.strength() for snake in
+                   self.snakes):
                 # other snake is likely to move to closest food
                 multiplier = (self.width + 1) * (self.height + 1)
                 multiplier -= min([manhattan(nxt, food) for food in self.food], default=0)
@@ -257,6 +257,7 @@ class Game(object):
 
     def move(self):
         # todo: find longest path if in small connected component
+        # todo: target: piece of body with least pieces behind it
         components = self.components()
 
         semi_allowed_food = set(self.food)
@@ -270,9 +271,11 @@ class Game(object):
         head_field = inf * np.ones((self.width, self.height))
 
         # snakes are likely to grab food in a straight line from them
+        # todo: also take this into account for next_components
         for food in self.food:
             for snake in self.snakes:
-                if snake.strength() >= self.you.strength() or manhattan(food, snake.head) <= manhattan(food, self.you.head):
+                if snake.strength() >= self.you.strength() or manhattan(food, snake.head) <= manhattan(food,
+                                                                                                       self.you.head):
                     if food[0] == snake.head[0] and not any((food[0], i) in _snake.body
                                                             for _snake in self.snakes
                                                             for i in range(min(food[1], snake.head[1]) + 1,
@@ -292,7 +295,8 @@ class Game(object):
         allowed_food = set(semi_allowed_food)
 
         next_components = self.components(*[(snake.head[0] + direction[0], snake.head[1] + direction[1])
-                                            for direction in dirs for snake in self.snakes])
+                                            for direction in dirs for snake in self.snakes]
+                                           + [tuple(p) for p in np.argwhere(head_field == -1)])
 
         for snake in self.snakes + [self.you]:
             rows, cols = zip(*snake.body)
@@ -361,7 +365,8 @@ class Game(object):
                     if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
 
                         # have to move away from the heads original position
-                        if head_field[next_end] > head_field[current.end] and food_field[next_end] < food_field[current.end]:
+                        if head_field[next_end] > head_field[current.end] and food_field[next_end] < food_field[
+                            current.end]:
                             for snake in self.snakes + [self.you]:
                                 if next_end in snake.body:
                                     break
@@ -421,14 +426,12 @@ def make_move(data):
          'name': 'densinh / Dennis'}}
 """
 
-
 """
 x = 0, y = 0 top left
 
 x = l - 1, y = l - 1 bottom right
 first element is head
 """
-
 
 """
 todo: aggression (sectioning off other snakes, head to head colission)
