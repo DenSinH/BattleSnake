@@ -271,11 +271,9 @@ class Game(object):
         head_field = inf * np.ones((self.width, self.height))
 
         # snakes are likely to grab food in a straight line from them
-        # todo: also take this into account for next_components
         for food in self.food:
             for snake in self.snakes:
-                if snake.strength() >= self.you.strength() or manhattan(food, snake.head) <= manhattan(food,
-                                                                                                       self.you.head):
+                if manhattan(food, snake.head) <= manhattan(food, self.you.head):
                     if food[0] == snake.head[0] and not any((food[0], i) in _snake.body
                                                             for _snake in self.snakes
                                                             for i in range(min(food[1], snake.head[1]) + 1,
@@ -294,6 +292,7 @@ class Game(object):
 
         allowed_food = set(semi_allowed_food)
 
+        # we don't like our snake to move across forbidden lines either
         next_components = self.components(*[(snake.head[0] + direction[0], snake.head[1] + direction[1])
                                             for direction in dirs for snake in self.snakes]
                                            + [tuple(p) for p in np.argwhere(head_field == -1)])
