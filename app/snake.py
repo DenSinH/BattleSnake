@@ -225,8 +225,15 @@ class Game(object):
 
             if any(manhattan(nxt, snake.head) == 1 for snake in self.snakes):
                 # other snake is likely to move to closest food
-                choices[dirs[direction]] = - (self.width + self.height + 1
-                                              - min([manhattan(nxt, food) for food in self.food], default=0)) * INFINITY
+                multiplier = (self.width + 1) * (self.height + 1)
+                multiplier -= min([manhattan(nxt, food) for food in self.food], default=0)
+
+                # prefer to stay in larger area
+                for component in components:
+                    if nxt in component:
+                        multiplier -= len(component)
+                        break
+                choices[dirs[direction]] = - multiplier * INFINITY
                 continue
 
             for component in components:
