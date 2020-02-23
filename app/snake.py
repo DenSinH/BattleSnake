@@ -227,6 +227,8 @@ class Game(object):
                 if nxt in component:
                     choices[dirs[direction]] = len(component)
                     break
+            else:
+                continue
 
             for next_component in next_components:
                 if nxt in components:
@@ -267,9 +269,7 @@ class Game(object):
             rows, cols = zip(*snake.body)
             head_field[rows, cols] = -1
 
-        # todo: don't allow components that snakes could cut off with their head (self.components(*other_snake_possible_head_positions))
-        # todo: only if component & old component : old component is not already smaller than head
-
+        # don't allow food that other snakes could cut off
         for next_component in next_components:
 
             if len(next_component) < len(self.you):
