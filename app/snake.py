@@ -233,8 +233,7 @@ class Game(object):
                     choices[dirs[direction]] = len(next_component)
                     break
 
-            if any(manhattan(nxt, part) == 1 for snake in self.snakes + [self.you] for part in snake.body if part != self.you.head):
-                choices[dirs[direction]] += 10
+            choices[dirs[direction]] += self.score_spot(nxt)
 
         if len(choices) == 0:
             return random.choice(list(dirs.values()))
