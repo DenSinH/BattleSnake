@@ -242,16 +242,18 @@ class Game(object):
         # todo: find longest path if in small connected component
         components = self.components()
 
-        allowed_food = set(self.food)
+        semi_allowed_food = set(self.food)
 
         for component in components:
             if len(component) < len(self.you):
-                allowed_food -= component
+                semi_allowed_food -= component
 
-        for food in list(allowed_food):
+        for food in list(semi_allowed_food):
             if any(manhattan(snake.head, food) == 1 and snake.strength() >= self.you.strength()
                    for snake in self.snakes):
-                allowed_food.remove(food)
+                semi_allowed_food.remove(food)
+
+        allowed_food = set(semi_allowed_food)
 
         # prepare field
         inf = self.width * self.height + 1
@@ -277,18 +279,22 @@ class Game(object):
 
                             allowed_food -= next_component
 
+                        semi_allowed_food -= component
+
                     elif len(next_component) < len(self.you) / 2:
                         rows, cols = zip(*next_component)
                         head_field[rows, cols] = -1
 
                         allowed_food -= next_component
-
                     break
 
         # todo: no food case:
         if len(allowed_food) == 0:
-            print("NO FOOD ALLOWED")
-            return self.no_food(components, next_components)
+            if len(semi_allowed_food) > 0:
+                allowed_food = semi_allowed_food
+            else:
+                print("NO FOOD ALLOWED")
+                return self.no_food(components, next_components)
 
         food_field = np.array(head_field)
 
