@@ -212,7 +212,7 @@ class Game(object):
 
     def no_food(self, components, next_components):
         print([len(next_component) for next_component in next_components])
-        
+
         choices = {}
         for direction in dirs:
             nxt = (self.you.head[0] + direction[0], self.you.head[1] + direction[1])
@@ -224,7 +224,9 @@ class Game(object):
                 continue
 
             if any(manhattan(nxt, snake.head) == 1 for snake in self.snakes):
-                choices[dirs[direction]] = -INFINITY
+                # other snake is likely to move to closest food
+                choices[dirs[direction]] = - (self.width + self.height + 1
+                                              - min([manhattan(nxt, food) for food in self.food], default=0)) * INFINITY
                 continue
 
             for component in components:
@@ -305,7 +307,7 @@ class Game(object):
 
                 allowed_food -= next_component
 
-        # todo: no food case:
+        # no food case:
         if len(allowed_food) == 0:
             if len(semi_allowed_food) > 0 \
                     and 1.5 * min([manhattan(food, self.you.head) for food in semi_allowed_food]) >= self.you.health:
@@ -319,7 +321,7 @@ class Game(object):
 
         head_field, food_found = self.flow([np.array(self.you.head)], allowed_food, head_field)
 
-        # todo: no reachable food case
+        # no reachable food case
         if not food_found:
             print("NO PATH TO FOOD")
             return self.no_food(components, next_components)
