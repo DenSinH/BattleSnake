@@ -244,7 +244,8 @@ class Game(object):
                 allowed_food -= component
 
         for food in list(allowed_food):
-            if any(manhattan(snake.head, food) == 1 for snake in self.snakes):
+            if any(manhattan(snake.head, food) == 1 and snake.strength() >= self.you.strength()
+                   for snake in self.snakes):
                 allowed_food.remove(food)
 
         # todo: no food case:
