@@ -197,7 +197,9 @@ class Game(object):
         return s
 
     def score(self, path, score_field):
-        return sum(score_field[spot] for spot in path)
+        # prefer to go straight slightly
+        return sum(score_field[spot] for spot in path) + int(path.prevdir == (self.you.head[0] - self.you.body[1][0],
+                                                                              self.you.head[1] - self.you.body[1][1]))
 
     def get_best(self, paths, allowed_squares):
         # assign score values to allowed_squares and calculate score
