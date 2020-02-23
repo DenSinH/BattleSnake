@@ -161,7 +161,7 @@ class Game(object):
 
         # snake likes to be next to game border if it is not next to another snake
         for snake in self.snakes:
-            for part in snake.body:
+            for part in snake.body[:-1]:
                 if manhattan(spot, part) == 1:
                     next_over = (2 * spot[0] - part[0], 2 * spot[1] - part[1])
 
@@ -171,7 +171,7 @@ class Game(object):
                     elif next_over[1] in [-1, self.height]:
                         s -= 3
 
-                    elif any(next_over in _snake.body for _snake in self.snakes):
+                    elif any(next_over in _snake.body[:-1] for _snake in self.snakes):
                         s -= 3
 
                     else:
