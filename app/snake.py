@@ -254,12 +254,29 @@ class Game(object):
 
         inf = self.width * self.height + 1
         head_field = inf * np.ones((self.width, self.height))
+        next_components = self.components(*[(snake.head[0] + direction[0], snake.head[1] + direction[1])
+                                            for direction in dirs for snake in self.snakes])
         for snake in self.snakes + [self.you]:
             rows, cols = zip(*snake.body)
             head_field[rows, cols] = -1
 
         # todo: don't allow components that snakes could cut off with their head (self.components(*other_snake_possible_head_positions))
         # todo: only if component & old component : old component is not already smaller than head
+
+        for next_component in next_components:
+
+            for component in components:
+                if next_component & component:
+                    if len(component) < len(self.you):
+                        if len(next_component) < len(self.you) / 2:
+                            rows, cols = zip(*next_component)
+                            head_field[rows, cols] = -1
+
+                    elif len(next_component) < len(self.you):
+                        rows, cols = zip(*next_component)
+                        head_field[rows, cols] = -1
+
+                    break
 
         food_field = np.array(head_field)
 
