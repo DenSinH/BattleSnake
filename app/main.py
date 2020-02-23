@@ -67,7 +67,7 @@ def move():
     direction = snake.make_move(data)
     t = time.time() - t0
     print("moving", direction, "in turn", data["turn"])
-    print("decision made in", t, "seconds")
+    print("decision made in", int(t * 1000), "milliseconds")
     if t > 0.45:
         for i in range(5):
             print("WARNING, TOO SLOW")
