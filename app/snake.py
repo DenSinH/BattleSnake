@@ -211,6 +211,8 @@ class Game(object):
         return max(paths, key=lambda p: self.score(p, score_field))
 
     def no_food(self, components, next_components):
+        print([len(next_component) for next_component in next_components])
+        
         choices = {}
         for direction in dirs:
             nxt = (self.you.head[0] + direction[0], self.you.head[1] + direction[1])
@@ -227,14 +229,14 @@ class Game(object):
 
             for component in components:
                 if nxt in component:
-                    choices[dirs[direction]] = len(component)
+                    choices[dirs[direction]] = 3 * len(component)
                     break
             else:
                 continue
 
             for next_component in next_components:
                 if nxt in components:
-                    choices[dirs[direction]] = len(next_component)
+                    choices[dirs[direction]] = 3 * len(next_component)
                     break
 
             choices[dirs[direction]] += self.score_spot(nxt)
