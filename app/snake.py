@@ -271,6 +271,12 @@ class Game(object):
             rows, cols = zip(*snake.body)
             head_field[rows, cols] = -1
 
+        # snakes next to food are likely to grab it
+        for food in self.food:
+            if any(manhattan(snake.head, food) == 1 and snake.strength() >= self.you.strength()
+                   for snake in self.snakes):
+                head_field[food] = -1
+
         # don't allow food that other snakes could cut off
         for next_component in next_components:
 
