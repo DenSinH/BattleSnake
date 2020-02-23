@@ -257,26 +257,29 @@ class Game(object):
         # prepare field
         inf = self.width * self.height + 1
         head_field = inf * np.ones((self.width, self.height))
-        
+
         # snakes are likely to grab food in a straight line from them
         for food in self.food:
             for snake in self.snakes:
                 if snake.strength() >= self.you.strength():
-                    if food[0] == snake.head[0] and not any((food[0], i) in _snake.body
-                                                            for _snake in self.snakes
-                                                            for i in range(min(food[1], snake.head[1]) + 1,
-                                                                           max(food[1], snake.head[1]))):
+                    
+                    # I might be closer already
+                    if manhattan(food, snake.head) <= manhattan(food, self.you.head):
+                        if food[0] == snake.head[0] and not any((food[0], i) in _snake.body
+                                                                for _snake in self.snakes
+                                                                for i in range(min(food[1], snake.head[1]) + 1,
+                                                                               max(food[1], snake.head[1]))):
 
-                        semi_allowed_food.discard(food)
-                        head_field[food[0], min(food[1], snake.head[1]):max(food[1], snake.head[1]) + 1] = -1
+                            semi_allowed_food.discard(food)
+                            head_field[food[0], min(food[1], snake.head[1]):max(food[1], snake.head[1]) + 1] = -1
 
-                    elif food[1] == snake.head[1] and not any((i, food[1]) in _snake.body
-                                                            for _snake in self.snakes
-                                                            for i in range(min(food[0], snake.head[0]) + 1,
-                                                                           max(food[0], snake.head[0]))):
+                        elif food[1] == snake.head[1] and not any((i, food[1]) in _snake.body
+                                                                  for _snake in self.snakes
+                                                                  for i in range(min(food[0], snake.head[0]) + 1,
+                                                                                 max(food[0], snake.head[0]))):
 
-                        semi_allowed_food.discard(food)
-                        head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
+                            semi_allowed_food.discard(food)
+                            head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
 
         allowed_food = set(semi_allowed_food)
 
