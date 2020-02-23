@@ -205,7 +205,7 @@ class Game(object):
 
         return max(paths, key=lambda p: self.score(p, score_field))
 
-    def no_food(self, components):
+    def no_food(self, components, next_components):
         choices = {}
         for direction in dirs:
             nxt = (self.you.head[0] + direction[0], self.you.head[1] + direction[1])
@@ -223,6 +223,11 @@ class Game(object):
             for component in components:
                 if nxt in component:
                     choices[dirs[direction]] = len(component)
+                    break
+
+            for next_component in next_components:
+                if nxt in components:
+                    choices[dirs[direction]] = len(next_component)
                     break
 
             if any(manhattan(nxt, part) == 1 for snake in self.snakes + [self.you] for part in snake.body if part != self.you.head):
@@ -248,14 +253,12 @@ class Game(object):
                    for snake in self.snakes):
                 allowed_food.remove(food)
 
-        # todo: no food case:
-        if len(allowed_food) == 0:
-            return self.no_food(components)
-
+        # prepare field
         inf = self.width * self.height + 1
         head_field = inf * np.ones((self.width, self.height))
         next_components = self.components(*[(snake.head[0] + direction[0], snake.head[1] + direction[1])
                                             for direction in dirs for snake in self.snakes])
+
         for snake in self.snakes + [self.you]:
             rows, cols = zip(*snake.body)
             head_field[rows, cols] = -1
@@ -272,11 +275,20 @@ class Game(object):
                             rows, cols = zip(*next_component)
                             head_field[rows, cols] = -1
 
+                            allowed_food -= next_component
+
                     elif len(next_component) < len(self.you):
                         rows, cols = zip(*next_component)
                         head_field[rows, cols] = -1
 
+                        allowed_food -= next_component
+
                     break
+
+        # todo: no food case:
+        if len(allowed_food) == 0:
+            print("NO FOOD ALLOWED")
+            return self.no_food(components, next_components)
 
         food_field = np.array(head_field)
 
@@ -284,7 +296,8 @@ class Game(object):
 
         # todo: no reachable food case
         if not food_found:
-            return self.no_food(components)
+            print("NO PATH TO FOOD")
+            return self.no_food(components, next_components)
 
         food_field, _ = self.flow([np.array(food) for food in food_found], {self.you.head}, food_field)
 
@@ -323,6 +336,7 @@ class Game(object):
 
             # if there is only one path after at least 1 generation, then there is only once choice
             if len(paths) == 1:
+                print("ONE CHOICE")
                 return paths[0].get()
 
             # if there are too many allowed squares, just find the best move after one generation
@@ -334,8 +348,8 @@ class Game(object):
         print(np.count_nonzero(allowed_squares), "ALLOWED SQUARES")
 
         if len(paths) == 0:
-            print("WONT MOVE NEXT TO BETTER SNAKES HEAD")
-            return self.no_food(components)
+            print("WON'T MOVE NEXT TO BETTER SNAKES HEAD")
+            return self.no_food(components, next_components)
 
         best = self.get_best(paths, allowed_squares)
         return best.get()
