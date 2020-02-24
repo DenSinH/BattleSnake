@@ -217,6 +217,7 @@ class Game(object):
                     continue
 
                 if next_end == target:
+                    print("LONGEST FOUND, length", len(current) + 1)
                     longest = max(longest, current.move(direction), key=lambda p: len(p))
                     continue
 
