@@ -300,7 +300,8 @@ class Game(object):
 
             choices[dirs[direction]] += self.score_spot(nxt)
 
-        if len(choices) == 0 or len(comp_reached) == 1:  # less than should never occur if there is a choice
+        if len(choices) == 0 or (len(comp_reached) == 1 and len(comp_reached[0]) < len(self.you)):
+            
             print("CHECKING LONGEST PATH")
             # determine target for longest path
             target = None
