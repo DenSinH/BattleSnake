@@ -173,6 +173,9 @@ class Game(object):
 
                 next_end = (current.end[0] + direction[0], current.end[1] + direction[1])
 
+                if next_end in current.path:
+                    continue
+
                 if next_end == target:
                     longest = max(longest, current.move(direction), key=lambda p: len(p))
                     continue
@@ -301,7 +304,7 @@ class Game(object):
             choices[dirs[direction]] += self.score_spot(nxt)
 
         if len(choices) == 0 or (len(comp_reached) == 1 and len(comp_reached[0]) < len(self.you)):
-            
+
             print("CHECKING LONGEST PATH")
             # determine target for longest path
             target = None
