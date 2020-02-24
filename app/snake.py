@@ -158,13 +158,14 @@ class Game(object):
         return field, target_found
 
     def longest_path(self, target):
+        print("TARGET:", target)
         paths = PriorityQueue()
         paths.put(Path(self.you.head), 0)
 
         longest = Path(self.you.head)
 
         while not paths.empty():
-            print(len(paths))
+
             current = paths.get()
 
             for direction in dirs:
@@ -179,6 +180,7 @@ class Game(object):
                     continue
 
                 if next_end == target:
+                    print("LONG PATH FOUND FROM", current.path)
                     longest = max(longest, current.move(direction), key=lambda p: len(p))
                     continue
 
