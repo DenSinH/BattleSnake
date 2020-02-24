@@ -202,6 +202,9 @@ class Game(object):
 
             current = paths.get()
 
+            # todo: check if we can finish path
+            # todo: stop if taking too long
+
             for direction in dirs:
                 # moving backwards is not allowed
                 if current.prevdir == (-direction[0], -direction[1]):
@@ -278,7 +281,7 @@ class Game(object):
                 s -= 1
 
         # snake likes to be next to own body even more
-        if any(manhattan(spot, part) == 1 for part in self.you.body):
+        if any(manhattan(spot, part) == 1 for part in self.you.body if part != self.you.head):
             s += 5
 
         return s
@@ -347,14 +350,20 @@ class Game(object):
 
         # check what components are reached by the best directions
         best = max(choices, key=lambda d: choices[d])
+        dirs_to_best = 0
         best_reached = []
 
         for d in choices:
             if choices[d] == choices[best]:
+                dirs_to_best += 1
                 if comp_reached[d] not in best_reached:
                     best_reached.append(comp_reached[d])
 
-        if len(best_reached) == 1 and len(best_reached[0]) < len(self.you):
+        if dirs_to_best == 1:
+            # only one best option
+            return best
+
+        elif len(best_reached) == 1 and len(best_reached[0]) < len(self.you):
 
             print("CHECKING LONGEST PATH")
             target = self.get_target(best_reached.pop())
