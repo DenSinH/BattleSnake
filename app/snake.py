@@ -167,6 +167,7 @@ class Game(object):
         while not paths.empty():
 
             current = paths.get()
+            print(len(paths), current.path)
 
             for direction in dirs:
                 # moving backwards is not allowed
@@ -265,7 +266,7 @@ class Game(object):
     def no_food(self, components, next_components):
 
         choices = {}
-        comp_reached = []
+        comp_reached = {}
 
         for direction in dirs:
             nxt = (self.you.head[0] + direction[0], self.you.head[1] + direction[1])
@@ -295,7 +296,7 @@ class Game(object):
                     choices[dirs[direction]] = 3 * len(component)
 
                     if component not in comp_reached:
-                        comp_reached.append(component)
+                        comp_reached[dirs[direction]] = component
                     break
             else:
                 continue
@@ -307,13 +308,22 @@ class Game(object):
 
             choices[dirs[direction]] += self.score_spot(nxt)
 
-        if len(choices) == 0 or (len(comp_reached) == 1 and len(comp_reached[0]) < len(self.you)):
+        # check what components are reached by the best directions
+        best = max(choices, key=lambda d: choices[d])
+        best_reached = []
+
+        for d in choices:
+            if choices[d] == choices[best]:
+                if comp_reached[d] not in best_reached:
+                    best_reached.append(comp_reached[d])
+
+        if len(choices) == 0 or (len(best_reached) == 1 and len(best_reached[0]) < len(self.you)):
 
             print("CHECKING LONGEST PATH")
             # determine target for longest path
             target = None
-            target_score = 1
-            component = comp_reached.pop()
+            target_score = 0
+            component = best_reached.pop()
 
             # find walls in components that are parts of snake
             for spot in component:
@@ -329,7 +339,7 @@ class Game(object):
                     for snake in self.snakes + [self.you]:
                         for i in range(len(snake.body)):
                             if nxt == snake.body[i]:
-                                nxt_score = i - len(snake)
+                                nxt_score = len(snake) - i
                                 # todo: check component connections?
                                 break
                         else:
@@ -338,7 +348,7 @@ class Game(object):
                     else:
                         continue
 
-                    if nxt_score < target_score or target is None:
+                    if nxt_score > target_score or target is None:
                         target = nxt
                         target_score = nxt_score
 
@@ -349,7 +359,7 @@ class Game(object):
 
             return random.choice(list(dirs.values()))
 
-        return max(choices, key=lambda i: choices[i])
+        return best
 
     def move(self):
         components = self.components()
