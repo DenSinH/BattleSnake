@@ -237,6 +237,9 @@ class Game(object):
 
             current = paths.get()
 
+            if len(paths) > 100:
+                print(len(paths))
+
             # todo: check if we can finish path
             # todo: stop if taking too long
 
