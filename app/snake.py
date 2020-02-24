@@ -268,7 +268,7 @@ class Game(object):
                         leftover = self.leftover(component, current, next_end, target)
                         if leftover >= 0:
                             if len(current) + leftover >= len(longest):
-                                paths.put(current.move(direction), len(current) + leftover)
+                                paths.put(current.move(direction), len(current) + manhattan(next_end, target))
 
         if len(longest) == 1:
             # THIS SHOULD NEVER HAPPEN:
