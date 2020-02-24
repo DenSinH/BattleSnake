@@ -320,7 +320,7 @@ class Game(object):
             print("CHECKING LONGEST PATH")
             # determine target for longest path
             target = None
-            target_score = 0
+            target_score = INFINITY
             component = best_reached.pop()
 
             # find walls in components that are parts of snake
@@ -346,7 +346,7 @@ class Game(object):
                     else:
                         continue
 
-                    if nxt_score > target_score or target is None:
+                    if nxt_score < target_score or target is None:
                         target = nxt
                         target_score = nxt_score
 
