@@ -157,6 +157,40 @@ class Game(object):
 
         return field, target_found
 
+    def get_target(self, component):
+        # determine target for longest path
+        target = None
+        target_score = INFINITY
+
+        # find walls in components that are parts of snake
+        for spot in component:
+            for direction in dirs:
+                nxt = (spot[0] + direction[0], spot[1] + direction[1])
+
+                if nxt in component:
+                    continue
+
+                if not (0 <= nxt[0] < self.width and 0 <= nxt[1] <= self.height):
+                    continue
+
+                for snake in self.snakes + [self.you]:
+                    for i in range(len(snake.body)):
+                        if nxt == snake.body[i]:
+                            nxt_score = len(snake) - i
+                            # todo: check component connections?
+                            break
+                    else:
+                        continue
+                    break
+                else:
+                    continue
+
+                if nxt_score < target_score or target is None:
+                    target = nxt
+                    target_score = nxt_score
+
+        return target
+
     def longest_path(self, target):
         print("TARGET:", target)
         paths = PriorityQueue()
@@ -317,37 +351,7 @@ class Game(object):
         if len(choices) == 0 or (len(best_reached) == 1 and len(best_reached[0]) < len(self.you)):
 
             print("CHECKING LONGEST PATH")
-            # determine target for longest path
-            target = None
-            target_score = INFINITY
-            component = best_reached.pop()
-
-            # find walls in components that are parts of snake
-            for spot in component:
-                for direction in dirs:
-                    nxt = (spot[0] + direction[0], spot[1] + direction[1])
-
-                    if nxt in component:
-                        continue
-
-                    if not (0 <= nxt[0] < self.width and 0 <= nxt[1] <= self.height):
-                        continue
-
-                    for snake in self.snakes + [self.you]:
-                        for i in range(len(snake.body)):
-                            if nxt == snake.body[i]:
-                                nxt_score = len(snake) - i
-                                # todo: check component connections?
-                                break
-                        else:
-                            continue
-                        break
-                    else:
-                        continue
-
-                    if nxt_score < target_score or target is None:
-                        target = nxt
-                        target_score = nxt_score
+            target = self.get_target(best_reached.pop())
 
             if target is not None:
                 longest = self.longest_path(target)
