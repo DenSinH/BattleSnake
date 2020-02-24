@@ -124,7 +124,9 @@ class Game(object):
         to_check = {end}
         checked = set()
         path_set = set(path.path)
-        leftover = 0
+
+        # !!! leftover is not 0 because end is not in path !!!
+        leftover = 1
         target_reached = False
 
         while to_check:
@@ -250,9 +252,11 @@ class Game(object):
                     continue
 
                 if next_end == target:
-                    # todo: is this actually the longest path (first we find)
-                    print("LONGEST PATH IS FROM", current.path)
-                    return current.move(direction)
+                    longest = max(longest, current.move(direction), key=lambda p: len(p))
+                    if len(longest) >= len(component) - 1:
+                        print("LONGEST PATH FOUND EARLY:", longest.path)
+                        return longest
+                    continue
 
                 # moving into borders or other snakes is not allowed (unless target)
                 if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
@@ -263,13 +267,17 @@ class Game(object):
                     else:
                         leftover = self.leftover(component, current, next_end, target)
                         if leftover >= 0:
-                            paths.put(current.move(direction), len(current) + leftover)
+                            if len(current) + leftover >= len(longest):
+                                paths.put(current.move(direction), len(current) + leftover)
 
         if len(longest) == 1:
             # THIS SHOULD NEVER HAPPEN:
             for i in range(10):
                 print("NO LONGEST PATH FOUND")
             return None
+
+        print("LONGEST PATH IS", longest.path)
+        return longest
 
     def score_spot(self, spot):
 
