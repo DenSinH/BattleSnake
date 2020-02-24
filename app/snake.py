@@ -155,7 +155,7 @@ class Game(object):
 
     def longest_path(self, target):
         paths = PriorityQueue()
-        paths.append(Path(self.you.head))
+        paths.put(Path(self.you.head), 0)
 
         longest = Path(self.you.head)
 
