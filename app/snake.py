@@ -34,6 +34,10 @@ class Path(object):
     def __getitem__(self, item):
         return self.path[item]
 
+    def __le__(self, other):
+        assert isinstance(other, Path)
+        return len(self) < len(other)
+
     def __len__(self):
         return len(self.path)
 
