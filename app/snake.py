@@ -1,5 +1,13 @@
 import numpy as np
 import random
+import sys
+import os
+
+# fixing api import error
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+
+from PriorityQueue import PriorityQueue
 
 dirs = {
     (1, 0): "right",
@@ -114,6 +122,8 @@ class Game(object):
         :param target:  set((int, int))
         :param field: np.2darray()
         :return: np.2darray, [(int, int)]
+
+        flows distance outward from starting generation of points
         """
 
         dist = 1
@@ -131,7 +141,7 @@ class Game(object):
 
                 for direction in dirs:
                     nxt = current + direction
-                    if (nxt[0], nxt[1]) in target:  # todo: food - components smaller than self.you
+                    if (nxt[0], nxt[1]) in target:
                         target_found.add((nxt[0], nxt[1]))
                         field[nxt[0], nxt[1]] = dist
                     elif np.all(nxt >= 0) and np.all(nxt < np.shape(field)):
@@ -142,6 +152,42 @@ class Game(object):
             dist += 1
 
         return field, target_found
+
+    def longest_path(self, target):
+        paths = PriorityQueue()
+        paths.append(Path(self.you.head))
+
+        longest = Path(self.you.head)
+
+        while not paths.empty():
+            current = paths.pop()
+
+            for direction in dirs:
+                # moving backwards is not allowed
+                if current.prevdir == (-direction[0], -direction[1]):
+                    continue
+
+                next_end = (current.end[0] + direction[0], current.end[1] + direction[1])
+
+                if next_end == target:
+                    longest = max(longest, current.move(direction), key=lambda p: len(p))
+                    continue
+
+                # moving into borders or other snakes is not allowed (unless target)
+                if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
+
+                    for snake in self.snakes + [self.you]:
+                        if next_end in snake.body:
+                            break
+                    else:
+                        paths.put(current.move(direction), len(current) + manhattan(next_end, target))
+
+        if len(longest) == 1:
+            print("NO LONGEST PATH FOUND")
+            return None
+
+        print("LONGEST PATH IS", len(longest))
+        return longest
 
     def score_spot(self, spot):
 
@@ -189,10 +235,6 @@ class Game(object):
         if any(manhattan(spot, part) == 1 for part in self.you.body):
             s += 5
 
-        # snake likes to have options
-        # if len(path) > 1:
-        #     s += 5 * sum([1 for i in self.flow(Path(path[1]))])
-
         return s
 
     def score(self, path, score_field):
@@ -210,9 +252,10 @@ class Game(object):
         return max(paths, key=lambda p: self.score(p, score_field))
 
     def no_food(self, components, next_components):
-        print([len(next_component) for next_component in next_components])
 
         choices = {}
+        comp_reached = []
+
         for direction in dirs:
             nxt = (self.you.head[0] + direction[0], self.you.head[1] + direction[1])
 
@@ -239,6 +282,9 @@ class Game(object):
             for component in components:
                 if nxt in component:
                     choices[dirs[direction]] = 3 * len(component)
+
+                    if component not in comp_reached:
+                        comp_reached.append(component)
                     break
             else:
                 continue
@@ -250,14 +296,48 @@ class Game(object):
 
             choices[dirs[direction]] += self.score_spot(nxt)
 
-        if len(choices) == 0:
+        if len(choices) == 0 or len(comp_reached) == 1:  # less than should never occur if there is a choice
+            print("CHECKING LONGEST PATH")
+            # determine target for longest path
+            target = None
+            target_score = 0
+            component = comp_reached.pop()
+
+            # find walls in components that are parts of snake
+            for spot in component:
+                for direction in dirs:
+                    nxt = (spot[0] + direction[0], spot[1] + direction[1])
+
+                    if nxt in component:
+                        continue
+
+                    if not (0 <= nxt[0] < self.width and 0 <= nxt[1] <= self.height):
+                        continue
+
+                    for snake in self.snakes + [self.you]:
+                        for i in range(len(snake.body)):
+                            if nxt == snake.body[i]:
+                                nxt_score = len(snake) - i
+                                # todo: check component connections?
+                                break
+                        else:
+                            continue
+                        break
+                    else:
+                        continue
+
+                    if nxt_score > target_score or target is None:
+                        target = nxt
+                        target_score = nxt_score
+
+            if target is not None:
+                return self.longest_path(target).get()
+
             return random.choice(list(dirs.values()))
 
         return max(choices, key=lambda i: choices[i])
 
     def move(self):
-        # todo: find longest path if in small connected component
-        # todo: target: piece of body with least pieces behind it
         components = self.components()
 
         semi_allowed_food = set(self.food)
@@ -365,7 +445,7 @@ class Game(object):
 
                         # have to move away from the heads original position
                         if head_field[next_end] > head_field[current.end] and food_field[next_end] < food_field[
-                            current.end]:
+                                current.end]:
                             for snake in self.snakes + [self.you]:
                                 if next_end in snake.body:
                                     break

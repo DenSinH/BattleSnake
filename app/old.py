@@ -1,5 +1,5 @@
-from pprint import pprint
-
+import numpy as np
+import random
 
 dirs = {
     (1, 0): "right",
@@ -9,6 +9,7 @@ dirs = {
 }
 
 INFINITY = 9999999
+
 
 def manhattan(point1, point2):
     return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
@@ -33,6 +34,12 @@ class Path(object):
 
     def __repr__(self):
         return str(self.path)
+
+    def __add__(self, other):
+        assert other.path[0] == self.end
+        assert len(other) > 1
+        return Path(other.end, prevdir=other.prevdir, path=self.path + other.path[1:],
+                    firstdir=self.firstdir if len(self) > 1 else other.firstdir)
 
     def move(self, direction):
         prev = self.path[-1]
@@ -70,67 +77,13 @@ class Game(object):
     def __init__(self, height, width, food, snakes, you, **kwargs):
         self.height = height
         self.width = width
-        self.food = [(pos["x"], pos["y"]) for pos in food]
+        self.food = {(pos["x"], pos["y"]) for pos in food}
         self.snakes = []
         for snake in snakes:
             if snake["id"] != you["id"]:
                 self.snakes.append(Snake(**snake))
 
         self.you = Snake(**you)
-
-    def flow(self, start):
-        for direction in dirs:
-            # moving backwards is not allowed
-            if start.prevdir == (-direction[0], -direction[1]):
-                pass
-            else:
-                next_end = (start.end[0] + direction[0], start.end[1] + direction[1])
-
-                # moving into borders or other snakes is not allowed
-                if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
-                    for snake in self.snakes + [self.you]:
-                        if next_end in snake.body:
-                            break
-                    else:
-                        yield start.move(direction)
-
-    def score(self, path):
-        s = 0
-        for spot in path:
-            # we dont want to move our head next to a stronger snakes head
-            if any(manhattan(path.first_head(), snake.head) == 1
-                   and snake.strength() >= self.you.strength() for snake in self.snakes):
-                print(path.get(), -1)
-                return -INFINITY
-
-            # snake likes to be next to game border if it is not next to another snake
-            if any(spot in snake.body for snake in self.snakes):
-                if spot[0] in [0, self.width - 1]:
-                    s -= 3
-
-                elif spot[1] in [0, self.height - 1]:
-                    s -= 3
-
-                else:
-                    s += 3
-
-            else:
-                if spot[0] in [0, self.width - 1]:
-                    s += 1
-
-                elif spot[1] in [0, self.height - 1]:
-                    s += 1
-
-            # snake likes to be next to own body even more
-            if spot in self.you.body:
-                s += 5
-
-            # snake likes to have options
-            if len(path) > 1:
-                s += 5 * sum([1 for i in self.flow(Path(path[1]))])
-
-        print(path.get(), s)
-        return s
 
     def components(self, *extra):
         walls = {part for snake in self.snakes for part in snake.body} | set(self.you.body) | set(extra)
@@ -155,89 +108,289 @@ class Game(object):
 
         return components
 
-    def find_best(self, paths, left):
+    def flow(self, generation, target, field):
         """
-        :param paths: Path[]
-        :return: Path
+        :param generation: np.array([int, int])[]
+        :param target:  set((int, int))
+        :param field: np.2darray()
+        :return: np.2darray, [(int, int)]
         """
-        dist = min(path.dist(path.end) for path in paths)
-        ends = {path.end for path in paths}
 
-        while len(left):
-            current = left.pop(0)
+        dist = 1
 
-            for next_path in self.flow(current):
+        target_found = set()
 
-                if min(next_path.dist(end) for end in ends) > dist:
-                    continue
+        rows, cols = zip(*generation)
+        field[rows, cols] = 0
 
-                if next_path.end in ends:
-                    paths.append(next_path)
+        while generation and not target_found:
+
+            generation_size = len(generation)
+            for i in range(generation_size):
+                current = generation.pop(0)
+
+                for direction in dirs:
+                    nxt = current + direction
+                    if (nxt[0], nxt[1]) in target:  # todo: food - components smaller than self.you
+                        target_found.add((nxt[0], nxt[1]))
+                        field[nxt[0], nxt[1]] = dist
+                    elif np.all(nxt >= 0) and np.all(nxt < np.shape(field)):
+                        if dist < field[nxt[0], nxt[1]]:
+                            field[nxt[0], nxt[1]] = dist
+                            generation.append(nxt)
+
+            dist += 1
+
+        return field, target_found
+
+    def score_spot(self, spot):
+
+        s = 0
+
+        for snake in self.snakes:
+            if manhattan(spot, snake.head) == 1:
+                if snake.strength() >= self.you.strength():
+                    # other is likely to go there
+                    if spot in self.food:
+                        return -INFINITY ** 2
+                    return -INFINITY
                 else:
-                    left.append(next_path)
+                    # slight bit of aggression
+                    s += 10
 
-        best = max(paths, key=self.score)
-        return best
+        # snake likes to be next to game border if it is not next to another snake
+        for snake in self.snakes:
+            for part in snake.body[:-1]:
+                if manhattan(spot, part) == 1:
+                    next_over = (2 * spot[0] - part[0], 2 * spot[1] - part[1])
+
+                    if next_over[0] in [-1, self.width]:
+                        s -= 3
+
+                    elif next_over[1] in [-1, self.height]:
+                        s -= 3
+
+                    elif any(next_over in _snake.body[:-1] for _snake in self.snakes):
+                        s -= 3
+
+                    else:
+                        s += 3
+
+                    break
+
+        else:
+            if spot[0] in [0, self.width - 1]:
+                s -= 1
+
+            elif spot[1] in [0, self.height - 1]:
+                s -= 1
+
+        # snake likes to be next to own body even more
+        if any(manhattan(spot, part) == 1 for part in self.you.body):
+            s += 5
+
+        # snake likes to have options
+        # if len(path) > 1:
+        #     s += 5 * sum([1 for i in self.flow(Path(path[1]))])
+
+        return s
+
+    def score(self, path, score_field):
+        # prefer to go straight slightly
+        return sum(score_field[spot] for spot in path) + int(path.prevdir == (self.you.head[0] - self.you.body[1][0],
+                                                                              self.you.head[1] - self.you.body[1][1]))
+
+    def get_best(self, paths, allowed_squares):
+        # assign score values to allowed_squares and calculate score
+        score_field = np.zeros((self.width, self.height))
+
+        for spot in zip(*np.nonzero(allowed_squares)[:2]):
+            score_field[spot] = self.score_spot(spot)
+
+        return max(paths, key=lambda p: self.score(p, score_field))
+
+    def no_food(self, components, next_components):
+        print([len(next_component) for next_component in next_components])
+
+        choices = {}
+        for direction in dirs:
+            nxt = (self.you.head[0] + direction[0], self.you.head[1] + direction[1])
+
+            if not (0 <= nxt[0] < self.width and 0 <= nxt[1] <= self.height):
+                continue
+
+            if any(nxt in snake.body for snake in self.snakes + [self.you]):
+                continue
+
+            if any(manhattan(nxt, snake.head) == 1 and snake.strength() >= self.you.strength() for snake in
+                   self.snakes):
+                # other snake is likely to move to closest food
+                multiplier = (self.width + 1) * (self.height + 1)
+                multiplier -= min([manhattan(nxt, food) for food in self.food], default=0)
+
+                # prefer to stay in larger area
+                for component in components:
+                    if nxt in component:
+                        multiplier -= len(component)
+                        break
+                choices[dirs[direction]] = - multiplier * INFINITY
+                continue
+
+            for component in components:
+                if nxt in component:
+                    choices[dirs[direction]] = 3 * len(component)
+                    break
+            else:
+                continue
+
+            for next_component in next_components:
+                if nxt in components:
+                    choices[dirs[direction]] = 3 * len(next_component)
+                    break
+
+            choices[dirs[direction]] += self.score_spot(nxt)
+
+        if len(choices) == 0:
+            return random.choice(list(dirs.values()))
+
+        return max(choices, key=lambda i: choices[i])
 
     def move(self):
         # todo: find longest path if in small connected component
-        # no food case:
-        if len(self.food) == 0:
-            return max(self.flow(Path(self.you.head)), key=self.score).get()
-
-        found = set(self.you.head)
-        generation = [Path(self.you.head)]
-        next_generation = []
+        # todo: target: piece of body with least pieces behind it
         components = self.components()
 
-        print("COMPONENTS BEFORE", [len(component) for component in components])
+        semi_allowed_food = set(self.food)
 
-        # find best path among shortest paths
-        shortest_paths = []
+        for component in components:
+            if len(component) < len(self.you):
+                semi_allowed_food -= component
 
-        # flow outward to find closest food and move along that path
-        while generation:
+        # prepare field
+        inf = self.width * self.height + 1
+        head_field = inf * np.ones((self.width, self.height))
 
-            for current in generation:
+        # snakes are likely to grab food in a straight line from them
+        for food in self.food:
+            for snake in self.snakes:
+                if manhattan(food, snake.head) <= manhattan(food, self.you.head):
+                    if food[0] == snake.head[0] and not any((food[0], i) in _snake.body
+                                                            for _snake in self.snakes
+                                                            for i in range(min(food[1], snake.head[1]) + 1,
+                                                                           max(food[1], snake.head[1]))):
 
-                for next_path in self.flow(current):
+                        semi_allowed_food.discard(food)
+                        head_field[food[0], min(food[1], snake.head[1]):max(food[1], snake.head[1]) + 1] = -1
 
-                    if next_path.end in self.food:
+                    elif food[1] == snake.head[1] and not any((i, food[1]) in _snake.body
+                                                              for _snake in self.snakes
+                                                              for i in range(min(food[0], snake.head[0]) + 1,
+                                                                             max(food[0], snake.head[0]))):
 
-                        # empty component
-                        for component in components:
-                            # todo: in small boards/late game, any component might be smaller than the snake
-                            if next_path.end in component and len(component) < len(self.you):
-                                print(f"Did not allow path to {next_path.end} because component too small")
-                                break
-                        else:
-                            shortest_paths.append(next_path)
+                        semi_allowed_food.discard(food)
+                        head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
 
-                    if next_path.end not in found:
-                        found.add(next_path.end)
-                        next_generation.append(next_path)
+        allowed_food = set(semi_allowed_food)
 
-            # only do best path if it is not dangerous
-            if shortest_paths:
-                best = self.find_best(shortest_paths, generation[:])
-                if self.score(best) > -INFINITY:
-                    return best.get()
-                shortest_paths = []
+        # we don't like our snake to move across forbidden lines either
+        next_components = self.components(*[(snake.head[0] + direction[0], snake.head[1] + direction[1])
+                                            for direction in dirs for snake in self.snakes]
+                                           + [tuple(p) for p in np.argwhere(head_field == -1)])
 
-            generation = next_generation
-            next_generation = []
+        for snake in self.snakes + [self.you]:
+            rows, cols = zip(*snake.body)
+            head_field[rows, cols] = -1
 
-        # todo: no path to food, choose largest area, largest path?
-        choices = {}
-        for next_path in self.flow(Path(self.you.head)):
-            choices[next_path.get()] = 0
+        # don't allow food that other snakes could cut off
+        for next_component in next_components:
 
-            # find largest area to go to
-            for component in components:
-                if next_path.end in component and len(component) < len(self.you):
-                    choices[next_path.get()] += len(component) - len(self.you)
+            if len(next_component) < len(self.you):
 
-        return max(choices, key=lambda i: choices[i])
+                for component in components:
+                    if next_component & component:
+                        if len(component) < len(self.you):
+                            semi_allowed_food -= component
+                    break
+
+                rows, cols = zip(*next_component)
+                head_field[rows, cols] = -1
+
+                allowed_food -= next_component
+
+        # no food case:
+        if len(allowed_food) == 0:
+            if len(semi_allowed_food) > 0 \
+                    and 1.5 * min([manhattan(food, self.you.head) for food in semi_allowed_food]) >= self.you.health:
+                print("LOW ENERGY, ALLOWED SOME FOOD")
+                allowed_food = semi_allowed_food
+            else:
+                print("NO FOOD ALLOWED")
+                return self.no_food(components, next_components)
+
+        food_field = np.array(head_field)
+
+        head_field, food_found = self.flow([np.array(self.you.head)], allowed_food, head_field)
+
+        # no reachable food case
+        if not food_found:
+            print("NO PATH TO FOOD")
+            return self.no_food(components, next_components)
+
+        food_field, _ = self.flow([np.array(food) for food in food_found], {self.you.head}, food_field)
+
+        allowed_squares = (head_field + food_field) == food_field[self.you.head]
+
+        paths = [Path(self.you.head)]
+
+        while paths and paths[0].end not in allowed_food:
+
+            for i in range(len(paths)):
+                current = paths.pop(0)
+
+                for direction in dirs:
+                    # moving backwards is not allowed
+                    if current.prevdir == (-direction[0], -direction[1]):
+                        continue
+
+                    next_end = (current.end[0] + direction[0], current.end[1] + direction[1])
+
+                    # only check if first move is next to other snake's head first generation
+                    if current.end == self.you.head:
+                        if any(manhattan(next_end, snake.head) == 1
+                               and snake.strength() >= self.you.strength() for snake in self.snakes):
+                            continue
+
+                    # moving into borders or other snakes is not allowed
+                    if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
+
+                        # have to move away from the heads original position
+                        if head_field[next_end] > head_field[current.end] and food_field[next_end] < food_field[
+                            current.end]:
+                            for snake in self.snakes + [self.you]:
+                                if next_end in snake.body:
+                                    break
+                            else:
+                                paths.append(current.move(direction))
+
+            # if there is only one path after at least 1 generation, then there is only once choice
+            if len(paths) == 1:
+                print("ONE CHOICE")
+                return paths[0].get()
+
+            # if there are too many allowed squares, just find the best move after one generation
+            elif len(paths) > 150 and np.count_nonzero(allowed_squares) >= 30:
+                print("TOO MANY POSSIBILITIES")
+                return self.get_best(paths, allowed_squares).get()
+
+        print(len(paths), "PATHS FOUND TO FOOD")
+        print(np.count_nonzero(allowed_squares), "ALLOWED SQUARES")
+
+        if len(paths) == 0:
+            print("WON'T MOVE NEXT TO BETTER SNAKES HEAD")
+            return self.no_food(components, next_components)
+
+        best = self.get_best(paths, allowed_squares)
+        return best.get()
 
 
 def make_move(data):
@@ -272,13 +425,12 @@ def make_move(data):
          'name': 'densinh / Dennis'}}
 """
 
-
 """
 x = 0, y = 0 top left
+
 x = l - 1, y = l - 1 bottom right
 first element is head
 """
-
 
 """
 todo: aggression (sectioning off other snakes, head to head colission)
