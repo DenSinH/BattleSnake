@@ -312,7 +312,7 @@ class Game(object):
             print("CHECKING LONGEST PATH")
             # determine target for longest path
             target = None
-            target_score = 0
+            target_score = 1
             component = comp_reached.pop()
 
             # find walls in components that are parts of snake
@@ -329,7 +329,7 @@ class Game(object):
                     for snake in self.snakes + [self.you]:
                         for i in range(len(snake.body)):
                             if nxt == snake.body[i]:
-                                nxt_score = len(snake) - i
+                                nxt_score = i - len(snake)
                                 # todo: check component connections?
                                 break
                         else:
@@ -338,7 +338,7 @@ class Game(object):
                     else:
                         continue
 
-                    if nxt_score > target_score or target is None:
+                    if nxt_score < target_score or target is None:
                         target = nxt
                         target_score = nxt_score
 
