@@ -214,7 +214,6 @@ class Game(object):
                     continue
 
                 if next_end == target:
-                    print("LONG PATH FOUND FROM", current.path)
                     longest = max(longest, current.move(direction), key=lambda p: len(p))
                     continue
 
@@ -228,10 +227,12 @@ class Game(object):
                         paths.put(current.move(direction), len(current) + manhattan(next_end, target))
 
         if len(longest) == 1:
-            print("NO LONGEST PATH FOUND")
+            # THIS SHOULD NEVER HAPPEN:
+            for i in range(10):
+                print("NO LONGEST PATH FOUND")
             return None
 
-        print("LONGEST PATH IS", len(longest))
+        print("LONGEST PATH IS", longest.path)
         return longest
 
     def score_spot(self, spot):
