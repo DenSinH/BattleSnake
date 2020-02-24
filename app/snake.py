@@ -323,6 +323,7 @@ class Game(object):
                         multiplier -= len(component)
                         comp_reached[dirs[direction]] = component
                         break
+
                 choices[dirs[direction]] = - multiplier * INFINITY
                 continue
 
@@ -341,6 +342,9 @@ class Game(object):
 
             choices[dirs[direction]] += self.score_spot(nxt)
 
+        if len(choices) == 0:
+            return random.choice(list(dirs.values()))
+
         # check what components are reached by the best directions
         best = max(choices, key=lambda d: choices[d])
         best_reached = []
@@ -350,7 +354,7 @@ class Game(object):
                 if comp_reached[d] not in best_reached:
                     best_reached.append(comp_reached[d])
 
-        if len(choices) == 0 or (len(best_reached) == 1 and len(best_reached[0]) < len(self.you)):
+        if len(best_reached) == 1 and len(best_reached[0]) < len(self.you):
 
             print("CHECKING LONGEST PATH")
             target = self.get_target(best_reached.pop())
@@ -359,6 +363,11 @@ class Game(object):
                 longest = self.longest_path(target)
                 if longest is not None:
                     return longest.get()
+                else:
+                    print("THIS SHOULD NEVER HAPPEN, longest IS None")
+
+            else:
+                print("THIS SHOULD NEVER HAPPEN, target IS None")
 
             return random.choice(list(dirs.values()))
 
