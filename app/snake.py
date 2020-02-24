@@ -321,6 +321,7 @@ class Game(object):
                 for component in components:
                     if nxt in component:
                         multiplier -= len(component)
+                        comp_reached[dirs[direction]] = component
                         break
                 choices[dirs[direction]] = - multiplier * INFINITY
                 continue
