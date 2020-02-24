@@ -120,6 +120,39 @@ class Game(object):
 
         return components
 
+    def leftover(self, component, path, end, target):
+        to_check = {end}
+        checked = set()
+        path_set = set(path.path)
+        leftover = 0
+        target_reached = False
+
+        while to_check:
+            current = to_check.pop()
+            checked.add(current)
+
+            for direction in dirs:
+                nxt = (current[0] + direction[0], current[1] + direction[1])
+
+                if nxt == target:
+                    target_reached = True
+
+                if nxt not in component:
+                    continue
+
+                if nxt in checked:
+                    continue
+
+                if nxt in path_set:
+                    continue
+
+                to_check.add(nxt)
+                leftover += 1
+
+        if target_reached:
+            return leftover
+        return -1
+
     def flow(self, generation, target, field):
         """
         :param generation: np.array([int, int])[]
@@ -191,7 +224,7 @@ class Game(object):
 
         return target
 
-    def longest_path(self, target):
+    def longest_path(self, target, component):
         print("TARGET:", target)
         paths = PriorityQueue()
         paths.put(Path(self.you.head), 0)
@@ -217,9 +250,8 @@ class Game(object):
                     continue
 
                 if next_end == target:
-                    print("LONGEST FOUND, length", len(current) + 1)
-                    longest = max(longest, current.move(direction), key=lambda p: len(p))
-                    continue
+                    # todo: is this actually the longest path (first we find)
+                    return current.move(direction)
 
                 # moving into borders or other snakes is not allowed (unless target)
                 if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
@@ -228,7 +260,9 @@ class Game(object):
                         if next_end in snake.body:
                             break
                     else:
-                        paths.put(current.move(direction), len(current) + manhattan(next_end, target))
+                        leftover = self.leftover(component, current, next_end, target)
+                        if leftover >= 0:
+                            paths.put(current.move(direction), len(current) + leftover)
 
         if len(longest) == 1:
             # THIS SHOULD NEVER HAPPEN:
@@ -367,10 +401,11 @@ class Game(object):
         elif len(best_reached) == 1 and len(best_reached[0]) < len(self.you):
 
             print("CHECKING LONGEST PATH")
-            target = self.get_target(best_reached.pop())
+            component = best_reached.pop()
+            target = self.get_target(component)
 
             if target is not None:
-                longest = self.longest_path(target)
+                longest = self.longest_path(target, component)
                 if longest is not None:
                     return longest.get()
                 else:
