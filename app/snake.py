@@ -164,6 +164,7 @@ class Game(object):
         longest = Path(self.you.head)
 
         while not paths.empty():
+            print(len(paths))
             current = paths.get()
 
             for direction in dirs:
@@ -173,6 +174,7 @@ class Game(object):
 
                 next_end = (current.end[0] + direction[0], current.end[1] + direction[1])
 
+                # can't loop back in on itself
                 if next_end in current.path:
                     continue
 
@@ -339,7 +341,9 @@ class Game(object):
                         target_score = nxt_score
 
             if target is not None:
-                return self.longest_path(target).get()
+                longest = self.longest_path(target)
+                if longest is not None:
+                    return longest.get()
 
             return random.choice(list(dirs.values()))
 
