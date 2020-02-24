@@ -294,9 +294,7 @@ class Game(object):
             for component in components:
                 if nxt in component:
                     choices[dirs[direction]] = 3 * len(component)
-
-                    if component not in comp_reached:
-                        comp_reached[dirs[direction]] = component
+                    comp_reached[dirs[direction]] = component
                     break
             else:
                 continue
