@@ -167,7 +167,6 @@ class Game(object):
         while not paths.empty():
 
             current = paths.get()
-            print(len(paths), current.path)
 
             for direction in dirs:
                 # moving backwards is not allowed
