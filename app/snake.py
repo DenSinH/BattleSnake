@@ -160,7 +160,7 @@ class Game(object):
         longest = Path(self.you.head)
 
         while not paths.empty():
-            current = paths.pop()
+            current = paths.get()
 
             for direction in dirs:
                 # moving backwards is not allowed
