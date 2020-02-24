@@ -251,6 +251,7 @@ class Game(object):
 
                 if next_end == target:
                     # todo: is this actually the longest path (first we find)
+                    print("LONGEST PATH IS FROM", current.path)
                     return current.move(direction)
 
                 # moving into borders or other snakes is not allowed (unless target)
@@ -269,9 +270,6 @@ class Game(object):
             for i in range(10):
                 print("NO LONGEST PATH FOUND")
             return None
-
-        print("LONGEST PATH IS", longest.path)
-        return longest
 
     def score_spot(self, spot):
 
