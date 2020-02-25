@@ -409,11 +409,7 @@ class Game(object):
                 if comp_reached[d] not in best_reached:
                     best_reached.append(comp_reached[d])
 
-        if dirs_to_best == 1:
-            # only one best option
-            return best
-
-        elif len(best_reached) == 1 and len(best_reached[0]) < len(self.you):
+        if len(best_reached) == 1 and len(best_reached[0]) < len(self.you):
 
             print("CHECKING LONGEST PATH")
             component = best_reached.pop()
