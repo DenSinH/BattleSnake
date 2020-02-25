@@ -98,7 +98,13 @@ class Game(object):
         self.you = Snake(**you)
 
     def components(self, *extra):
-        walls = {part for snake in self.snakes for part in snake.body} | set(self.you.body) | set(extra)
+        walls = {part for snake in self.snakes for part in snake.body[:-1]} | set(self.you.body[:-1]) | set(extra)
+
+        # tails will move
+        for snake in self.snakes + [self.you]:
+            if manhattan(snake.body[-1], self.you.head) == 1:
+                walls.add(snake.body[-1])
+
         components = []
 
         for x in range(self.width):
@@ -460,6 +466,9 @@ class Game(object):
                         semi_allowed_food.discard(food)
                         head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
 
+        # todo: if spot is surrounded by at least 3 walls (-1), also set it to -1
+        # todo: (keep doing this until no more change from tunnels)
+
         allowed_food = set(semi_allowed_food)
 
         # we don't like our snake to move across forbidden lines either
@@ -468,8 +477,12 @@ class Game(object):
                                            + [tuple(p) for p in np.argwhere(head_field == -1)])
 
         for snake in self.snakes + [self.you]:
-            rows, cols = zip(*snake.body)
+            rows, cols = zip(*snake.body[:-1])
             head_field[rows, cols] = -1
+
+            # snake tails will disappear, so don't take these into account for the field
+            if manhattan(snake.body[-1], self.you.head) == 1:
+                head_field[snake.body[-1]] = -1
 
         # don't allow food that other snakes could cut off
         for next_component in next_components:
