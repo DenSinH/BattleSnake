@@ -427,10 +427,15 @@ class Game(object):
         best = max(choices, key=lambda d: choices[d])
         best_reached = []
 
+        best_amount = 0
         for d in choices:
             if choices[d] == choices[best]:
+                best_amount += 1
                 if comp_reached[d] not in best_reached:
                     best_reached.append(comp_reached[d])
+
+        if best_amount == 1:
+            return best
 
         if len(best_reached) == 1 and len(best_reached[0]) < len(self.you):
 
