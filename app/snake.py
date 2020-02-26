@@ -375,7 +375,7 @@ class Game(object):
             if any(nxt in snake for snake in self.snakes + [self.you]):
                 continue
 
-            if any(manhattan(nxt, snake.head) == 1 and snake.strength() >= self.you.strength() for snake in
+            if any(manhattan(nxt, snake.head) == 1 and snake.strength() > self.you.strength() for snake in
                    self.snakes):
                 # other snake is likely to move to closest food
                 multiplier = (self.width + 1) * (self.height + 1)
@@ -384,7 +384,10 @@ class Game(object):
                 # prefer to stay in larger area
                 for component in components:
                     if nxt in component:
-                        multiplier -= len(component)
+                        if len(component) > len(self.you) / 4:
+                            multiplier -= len(component)
+                        else:
+                            multiplier = 0
                         comp_reached[dirs[direction]] = component
                         break
 
@@ -393,7 +396,7 @@ class Game(object):
 
             for component in components:
                 if nxt in component:
-                    choices[dirs[direction]] = 3 * len(component)
+                    choices[dirs[direction]] = 3 * (len(component) - len(self.you.body))
                     comp_reached[dirs[direction]] = component
                     break
             else:
@@ -401,7 +404,7 @@ class Game(object):
 
             for next_component in next_components:
                 if nxt in components:
-                    choices[dirs[direction]] = 3 * len(next_component)
+                    choices[dirs[direction]] = 3 * (len(next_component) - len(self.you.body))
                     break
 
             choices[dirs[direction]] += self.score_spot(nxt)
@@ -626,4 +629,5 @@ todo: aggression (sectioning off other snakes, head to head colission)
 
 """
 ignatius
+spud
 """
