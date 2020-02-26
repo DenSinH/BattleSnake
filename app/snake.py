@@ -233,7 +233,7 @@ class Game(object):
                     if nxt in snake:
                         for i in range(len(snake.body)):
                             if nxt == snake.body[i]:
-                                nxt_score = len(snake) - i
+                                nxt_score = len(snake) - i - manhattan(nxt, self.you.head)
                                 # todo: check component connections?
                                 break
                         break
@@ -276,11 +276,13 @@ class Game(object):
                     continue
 
                 if next_end == target:
-                    print(f"LONGEST PATH FOUND OF LENGTH {len(longest)}:", longest.path)
-                    return current.move(direction)
+                    longest = max(longest, current.move(direction), key=lambda p: len(p))
+                    if len(longest) > 1:
+                        print(f"LONGEST PATH FOUND OF LENGTH {len(longest)}:", longest.path)
+                        return longest
 
                     # todo: is this actually the longest path?
-                    longest = max(longest, current.move(direction), key=lambda p: len(p))
+
                     print("FOUND", len(longest))
                     if len(longest) >= len(component) - 1:
                         print("LONGEST PATH FOUND EARLY:", longest.path)
