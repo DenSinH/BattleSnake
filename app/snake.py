@@ -276,6 +276,10 @@ class Game(object):
                     continue
 
                 if next_end == target:
+                    print(f"LONGEST PATH FOUND OF LENGTH {len(longest)}:", longest.path)
+                    return longest
+
+                    # todo: is this actually the longest path?
                     longest = max(longest, current.move(direction), key=lambda p: len(p))
                     print("FOUND", len(longest))
                     if len(longest) >= len(component) - 1:
