@@ -492,6 +492,9 @@ class Game(object):
             allowed_next = None
             for direction in dirs:
                 next_head = (snake.head[0] + direction[0], snake.head[1] + direction[1])
+                if not (0 <= next_head[0] < self.width and 0 <= next_head[1] < self.height):
+                    continue
+
                 if head_field[next_head] != -1:
                     if allowed_next is not None:
                         break
@@ -500,6 +503,9 @@ class Game(object):
                 if allowed_next is not None:
                     for direction in dirs:
                         next_next = (allowed_next[0] + direction[0], allowed_next[1] + direction[1])
+                        if not (0 <= next_next[0] < self.width and 0 <= next_next[1] < self.height):
+                            continue
+
                         if manhattan(next_next, self.you.head) > 1:
                             head_field[next_next] = -1
 
