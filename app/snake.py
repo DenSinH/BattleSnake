@@ -226,6 +226,9 @@ class Game(object):
                 if not (0 <= nxt[0] < self.width and 0 <= nxt[1] <= self.height):
                     continue
 
+                if nxt == self.you.head:
+                    continue
+
                 for snake in self.snakes + [self.you]:
                     if nxt in snake:
                         for i in range(len(snake.body)):
@@ -237,6 +240,7 @@ class Game(object):
                 else:
                     continue
 
+                # nxt_score is defined since nxt is always in some snake
                 if nxt_score < target_score or target is None:
                     target = nxt
                     target_score = nxt_score
@@ -388,7 +392,7 @@ class Game(object):
                         if len(component) > len(self.you) / 4:
                             multiplier -= len(component)
                         else:
-                            multiplier = 0
+                            multiplier = 1
                         comp_reached[dirs[direction]] = component
                         break
 
