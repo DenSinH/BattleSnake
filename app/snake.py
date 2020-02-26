@@ -208,6 +208,14 @@ class Game(object):
             for direction in dirs:
                 nxt = (spot[0] + direction[0], spot[1] + direction[1])
 
+                # tails are in components
+                if nxt == self.you.body[-1]:
+                    return nxt
+
+                for snake in self.snakes:
+                    if nxt == snake.body[-1]:
+                        return nxt
+
                 if nxt in component:
                     continue
 
