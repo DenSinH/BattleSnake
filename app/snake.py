@@ -386,8 +386,7 @@ class Game(object):
             if any(nxt in snake for snake in self.snakes + [self.you]):
                 continue
 
-            if any(manhattan(nxt, snake.head) == 1 and snake.strength() > self.you.strength() for snake in
-                   self.snakes):
+            if any(manhattan(nxt, snake.head) == 1 for snake in self.snakes):  # todo: compare strength or not?
                 # other snake is likely to move to closest food
                 multiplier = (self.width + 1) * (self.height + 1)
                 multiplier -= min([manhattan(nxt, food) for food in self.food], default=0)
