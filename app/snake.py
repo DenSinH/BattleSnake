@@ -273,6 +273,7 @@ class Game(object):
 
                 if next_end == target:
                     longest = max(longest, current.move(direction), key=lambda p: len(p))
+                    print("FOUND", len(longest))
                     if len(longest) >= len(component) - 1:
                         print("LONGEST PATH FOUND EARLY:", longest.path)
                         return longest
@@ -478,11 +479,6 @@ class Game(object):
 
         allowed_food = set(semi_allowed_food)
 
-        # we don't like our snake to move across forbidden lines either
-        next_components = self.components(*[(snake.head[0] + direction[0], snake.head[1] + direction[1])
-                                            for direction in dirs for snake in self.snakes]
-                                           + [tuple(p) for p in np.argwhere(head_field == -1)])
-
         for snake in self.snakes + [self.you]:
             rows, cols = zip(*snake.body[:-1])
             head_field[rows, cols] = -1
@@ -490,6 +486,27 @@ class Game(object):
             # snake tails might disappear, so don't take these into account for the field
             if manhattan(snake.body[-1], self.you.head) == 1 or any(manhattan(snake.head, food) == 1 for food in self.food):
                 head_field[snake.body[-1]] = -1
+
+        # predict movement for snakes that have one option of moving
+        for snake in self.snakes:
+            allowed_next = None
+            for direction in dirs:
+                next_head = (snake.head[0] + direction[0], snake.head[1] + direction[1])
+                if head_field[next_head] != -1:
+                    if allowed_next is not None:
+                        break
+                    allowed_next = next_head
+            else:
+                if allowed_next is not None:
+                    for direction in dirs:
+                        next_next = (allowed_next[0] + direction[0], allowed_next[1] + direction[1])
+                        if manhattan(next_next, self.you.head) > 1:
+                            head_field[next_next] = -1
+
+        # we don't like our snake to move across forbidden lines either
+        next_components = self.components(*[(snake.head[0] + direction[0], snake.head[1] + direction[1])
+                                            for direction in dirs for snake in self.snakes]
+                                           + [tuple(p) for p in np.argwhere(head_field == -1)])
 
         # don't allow food that other snakes could cut off
         for next_component in next_components:
