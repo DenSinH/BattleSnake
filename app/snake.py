@@ -102,7 +102,7 @@ class Game(object):
 
         # tails will move
         for snake in self.snakes + [self.you]:
-            if manhattan(snake.body[-1], self.you.head) == 1:
+            if manhattan(snake.body[-1], self.you.head) == 1 or any(manhattan(snake.head, food) == 1 for food in self.food):
                 walls.add(snake.body[-1])
 
         components = []
@@ -400,12 +400,10 @@ class Game(object):
 
         # check what components are reached by the best directions
         best = max(choices, key=lambda d: choices[d])
-        dirs_to_best = 0
         best_reached = []
 
         for d in choices:
             if choices[d] == choices[best]:
-                dirs_to_best += 1
                 if comp_reached[d] not in best_reached:
                     best_reached.append(comp_reached[d])
 
@@ -476,8 +474,8 @@ class Game(object):
             rows, cols = zip(*snake.body[:-1])
             head_field[rows, cols] = -1
 
-            # snake tails will disappear, so don't take these into account for the field
-            if manhattan(snake.body[-1], self.you.head) == 1:
+            # snake tails might disappear, so don't take these into account for the field
+            if manhattan(snake.body[-1], self.you.head) == 1 or any(manhattan(snake.head, food) == 1 for food in self.food):
                 head_field[snake.body[-1]] = -1
 
         # don't allow food that other snakes could cut off
