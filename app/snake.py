@@ -106,7 +106,8 @@ class Game(object):
 
         # tails will move
         for snake in self.snakes + [self.you]:
-            if manhattan(snake.body[-1], self.you.head) == 1 or any(manhattan(snake.head, food) == 1 for food in self.food):
+            # if snake ate food, it will be the same
+            if manhattan(snake.body[-1], self.you.head) == 1 or snake.strength() == 100:
                 walls.add(snake.body[-1])
 
         components = []
@@ -498,7 +499,7 @@ class Game(object):
             head_field[rows, cols] = -1
 
             # snake tails might disappear, so don't take these into account for the field
-            if manhattan(snake.body[-1], self.you.head) == 1 or any(manhattan(snake.head, food) == 1 for food in self.food):
+            if manhattan(snake.body[-1], self.you.head) == 1 or snake.strength() == 100:
                 head_field[snake.body[-1]] = -1
 
         # predict movement for snakes that have one option of moving
