@@ -75,10 +75,14 @@ class Snake(object):
     def __init__(self, body, health, **kwargs):
         self.health = health
         self.body = [(pos["x"], pos["y"]) for pos in body]
+        self.bodyset = set(self.body)
         self.head = self.body[0]
 
     def __len__(self):
         return len(self.body)
+
+    def __contains__(self, item):
+        return item in self.bodyset
 
     def strength(self):
         return len(self.body)
@@ -203,18 +207,18 @@ class Game(object):
         target = None
         target_score = INFINITY
 
+        # tails might be part of a component
+        if self.you.body[-1] in component:
+            return self.you.body[-1]
+
+        for snake in self.snakes:
+            if snake.body[-1] in component:
+                return snake.body[-1]
+
         # find walls in components that are parts of snake
         for spot in component:
             for direction in dirs:
                 nxt = (spot[0] + direction[0], spot[1] + direction[1])
-
-                # tails are in components
-                if nxt == self.you.body[-1]:
-                    return nxt
-
-                for snake in self.snakes:
-                    if nxt == snake.body[-1]:
-                        return nxt
 
                 if nxt in component:
                     continue
@@ -223,14 +227,13 @@ class Game(object):
                     continue
 
                 for snake in self.snakes + [self.you]:
-                    for i in range(len(snake.body)):
-                        if nxt == snake.body[i]:
-                            nxt_score = len(snake) - i
-                            # todo: check component connections?
-                            break
-                    else:
-                        continue
-                    break
+                    if nxt in snake:
+                        for i in range(len(snake.body)):
+                            if nxt == snake.body[i]:
+                                nxt_score = len(snake) - i
+                                # todo: check component connections?
+                                break
+                        break
                 else:
                     continue
 
@@ -279,7 +282,7 @@ class Game(object):
                 if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
 
                     for snake in self.snakes + [self.you]:
-                        if next_end in snake.body:
+                        if next_end in snake:
                             break
                     else:
                         leftover = self.leftover(component, current, next_end, target)
@@ -323,7 +326,7 @@ class Game(object):
                     elif next_over[1] in [-1, self.height]:
                         s -= 3
 
-                    elif any(next_over in _snake.body[:-1] for _snake in self.snakes):
+                    elif any(next_over in _snake for _snake in self.snakes):
                         s -= 3
 
                     else:
@@ -369,7 +372,7 @@ class Game(object):
             if not (0 <= nxt[0] < self.width and 0 <= nxt[1] <= self.height):
                 continue
 
-            if any(nxt in snake.body for snake in self.snakes + [self.you]):
+            if any(nxt in snake for snake in self.snakes + [self.you]):
                 continue
 
             if any(manhattan(nxt, snake.head) == 1 and snake.strength() >= self.you.strength() for snake in
@@ -452,24 +455,23 @@ class Game(object):
         for food in self.food:
             for snake in self.snakes:
                 if manhattan(food, snake.head) <= manhattan(food, self.you.head):
-                    if food[0] == snake.head[0] and not any((food[0], i) in _snake.body
+                    if food[0] == snake.head[0] and not any((food[0], i) in _snake
                                                             for _snake in self.snakes
                                                             for i in range(min(food[1], snake.head[1]) + 1,
                                                                            max(food[1], snake.head[1]))):
 
                         semi_allowed_food.discard(food)
-                        head_field[food[0], min(food[1], snake.head[1]):max(food[1], snake.head[1]) + 1] = -1
+                        if snake.strength() >= self.you.strength():
+                            head_field[food[0], min(food[1], snake.head[1]):max(food[1], snake.head[1]) + 1] = -1
 
-                    elif food[1] == snake.head[1] and not any((i, food[1]) in _snake.body
+                    elif food[1] == snake.head[1] and not any((i, food[1]) in _snake
                                                               for _snake in self.snakes
                                                               for i in range(min(food[0], snake.head[0]) + 1,
                                                                              max(food[0], snake.head[0]))):
 
                         semi_allowed_food.discard(food)
-                        head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
-
-        # todo: if spot is surrounded by at least 3 walls (-1), also set it to -1
-        # todo: (keep doing this until no more change from tunnels)
+                        if snake.strength() >= self.you.strength():
+                            head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
 
         allowed_food = set(semi_allowed_food)
 
@@ -552,7 +554,7 @@ class Game(object):
                         if head_field[next_end] > head_field[current.end] and food_field[next_end] < food_field[
                                 current.end]:
                             for snake in self.snakes + [self.you]:
-                                if next_end in snake.body:
+                                if next_end in snake:
                                     break
                             else:
                                 paths.append(current.move(direction))
@@ -619,4 +621,9 @@ first element is head
 
 """
 todo: aggression (sectioning off other snakes, head to head colission)
+"""
+
+
+"""
+ignatius
 """
