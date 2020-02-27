@@ -107,7 +107,7 @@ class Game(object):
         # tails will move
         for snake in self.snakes + [self.you]:
             # if snake ate food, it will be the same
-            if manhattan(snake.body[-1], self.you.head) == 1 or snake.strength() == 100:
+            if manhattan(snake.body[-1], self.you.head) == 1 or snake.health == 100:
                 walls.add(snake.body[-1])
 
         components = []
@@ -470,7 +470,7 @@ class Game(object):
         for component in components:
             if not any(manhattan(spot, self.you.head) == 1 for spot in component):
                 semi_allowed_food -= component
-                
+
             elif len(component) < 0.8 * len(self.you):
                 semi_allowed_food -= component
 
@@ -481,7 +481,10 @@ class Game(object):
         # snakes are likely to grab food in a straight line from them
         for food in self.food:
             for snake in self.snakes:
-                if manhattan(food, snake.head) <= manhattan(food, self.you.head):
+                if manhattan(food, snake.head) < manhattan(food, self.you.head) or \
+                        (manhattan(food, snake.head) == manhattan(food, self.you.head) and
+                         snake.strength() > self.you.strength()):
+
                     if food[0] == snake.head[0] and not any((food[0], i) in _snake
                                                             for _snake in self.snakes
                                                             for i in range(min(food[1], snake.head[1]) + 1,
