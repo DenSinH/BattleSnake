@@ -430,9 +430,6 @@ class Game(object):
                 if comp_reached[d] not in best_reached:
                     best_reached.append(comp_reached[d])
 
-        if best_amount == 1:
-            return best
-
         if len(best_reached) == 1 and len(best_reached[0]) < len(self.you):
 
             print("CHECKING LONGEST PATH")
