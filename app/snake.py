@@ -338,7 +338,7 @@ class Game(object):
                     elif next_over[1] in [-1, self.height]:
                         s -= 3
 
-                    elif any(next_over in _snake for _snake in self.snakes):
+                    elif any(next_over in _snake for _snake in self.snakes + [self.you]):
                         s -= 3
 
                     else:
@@ -355,7 +355,7 @@ class Game(object):
 
         # snake likes to be next to own body even more
         if any(manhattan(spot, part) == 1 for part in self.you.body if part != self.you.head):
-            s += 5
+            s += 3
 
         return s
 
