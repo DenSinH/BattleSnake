@@ -321,6 +321,18 @@ class Game(object):
                     # other is likely to go there
                     if spot in self.food:
                         return -INFINITY ** 2
+
+                    # snake is more likely to go straight
+                    prevdir = (snake.head[0] - snake.body[1][0], snake.head[1] - snake.body[1][1])
+                    if (spot[0] - snake.head[0], spot[1] - snake.head[1]) == prevdir:
+                        return - 3 * INFINITY
+                    else:
+                        # snake might be more likely to go to food
+                        for food in self.food:
+                            if manhattan(snake.head, food) < (self.width + self.height) / 3:
+                                if manhattan(snake.head, food) > manhattan(spot, food):
+                                    return - 2 * INFINITY
+                                
                     return -INFINITY
                 else:
                     # slight bit of aggression
