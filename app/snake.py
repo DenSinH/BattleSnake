@@ -332,7 +332,7 @@ class Game(object):
                             if manhattan(snake.head, food) < (self.width + self.height) / 3:
                                 if manhattan(snake.head, food) > manhattan(spot, food):
                                     return - 2 * INFINITY
-                                
+
                     return -INFINITY
                 else:
                     # slight bit of aggression
@@ -399,14 +399,14 @@ class Game(object):
             if any(nxt in snake for snake in self.snakes + [self.you]):
                 continue
 
-            if any(manhattan(nxt, snake.head) == 1 and snake.strength() > self.you.strength() for snake in self.snakes):
+            if any(manhattan(nxt, snake.head) == 1 and snake.strength() >= self.you.strength() for snake in self.snakes):
 
                 # prefer to stay in larger area
                 for component in components:
                     if nxt in component:
                         if len(component) > len(self.you) / 4:
                             # going to be negative anyway
-                            choices[dirs[direction]] = 5 * (len(component) - len(self.you.body))
+                            choices[dirs[direction]] = - INFINITY / len(component)
                         else:
                             choices[dirs[direction]] = -INFINITY
                         comp_reached[dirs[direction]] = component
