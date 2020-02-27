@@ -339,6 +339,7 @@ class Game(object):
                     s += 10
 
         # snake likes to be next to game border if it is not next to another snake
+        forbidden_edge = False
         for snake in self.snakes:
             for part in snake.body[:-1]:
                 if manhattan(spot, part) == 1:
@@ -346,9 +347,11 @@ class Game(object):
 
                     if next_over[0] in [-1, self.width]:
                         s -= 3
+                        forbidden_edge = True
 
                     elif next_over[1] in [-1, self.height]:
                         s -= 3
+                        forbidden_edge = True
 
                     elif any(next_over in _snake for _snake in self.snakes + [self.you]):
                         s -= 3
@@ -358,12 +361,12 @@ class Game(object):
 
                     break
 
-        else:
+        if not forbidden_edge:
             if spot[0] in [0, self.width - 1]:
-                s -= 1
+                s += 2
 
             elif spot[1] in [0, self.height - 1]:
-                s -= 1
+                s += 2
 
         # snake likes to be next to own body even more
         if any(manhattan(spot, part) == 1 for part in self.you.body if part != self.you.head):
