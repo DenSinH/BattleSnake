@@ -387,22 +387,18 @@ class Game(object):
             if any(nxt in snake for snake in self.snakes + [self.you]):
                 continue
 
-            if any(manhattan(nxt, snake.head) == 1 for snake in self.snakes):  # todo: compare strength or not?
-                # other snake is likely to move to closest food
-                multiplier = (self.width + 1) * (self.height + 1)
-                multiplier -= min([manhattan(nxt, food) for food in self.food], default=0)
+            if any(manhattan(nxt, snake.head) == 1 and snake.strength() > self.you.strength() for snake in self.snakes):
 
                 # prefer to stay in larger area
                 for component in components:
                     if nxt in component:
                         if len(component) > len(self.you) / 4:
-                            multiplier -= len(component)
+                            # going to be negative anyway
+                            choices[dirs[direction]] = 5 * (len(component) - len(self.you.body))
                         else:
-                            multiplier = 1
+                            choices[dirs[direction]] = -INFINITY
                         comp_reached[dirs[direction]] = component
                         break
-
-                choices[dirs[direction]] = - multiplier * INFINITY
                 continue
 
             for component in components:
