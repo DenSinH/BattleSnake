@@ -468,7 +468,10 @@ class Game(object):
         semi_allowed_food = set(self.food)
 
         for component in components:
-            if len(component) < len(self.you):
+            if not any(manhattan(spot, self.you.head) == 1 for spot in component):
+                semi_allowed_food -= component
+                
+            elif len(component) < 0.8 * len(self.you):
                 semi_allowed_food -= component
 
         # prepare field
@@ -611,7 +614,7 @@ class Game(object):
                 return paths[0].get()
 
             # if there are too many allowed squares, just find the best move after one generation
-            elif len(paths) > 150 and np.count_nonzero(allowed_squares) >= 30:
+            elif len(paths) > 120 and np.count_nonzero(allowed_squares) >= 30:
                 print("TOO MANY POSSIBILITIES")
                 return self.get_best(paths, allowed_squares).get()
 
