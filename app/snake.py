@@ -100,8 +100,10 @@ class Game(object):
                 self.snakes.append(Snake(**snake))
 
         self.you = Snake(**you)
+        self.components = []
+        self.next_components = []
 
-    def components(self, *extra):
+    def get_components(self, *extra):
         walls = {part for snake in self.snakes for part in snake.body[:-1]} | set(self.you.body[:-1]) | set(extra)
 
         # tails will move
@@ -262,7 +264,6 @@ class Game(object):
             if len(paths) > 100:
                 print(len(paths))
 
-            # todo: check if we can finish path
             # todo: stop if taking too long
 
             for direction in dirs:
@@ -298,6 +299,7 @@ class Game(object):
                             break
                     else:
                         leftover = self.leftover(component, current, next_end, target)
+                        # if leftover < 0 then we cannot finish this path
                         if leftover >= 0:
                             if len(current) + leftover >= len(longest):
                                 paths.put(current.move(direction), len(current) + manhattan(next_end, target))
@@ -315,6 +317,11 @@ class Game(object):
 
         s = 0
 
+        component = set()
+        for component in self.components:
+            if spot in component:
+                break
+
         for snake in self.snakes:
             if manhattan(spot, snake.head) == 1:
                 if snake.strength() >= self.you.strength():
@@ -322,16 +329,19 @@ class Game(object):
                     if spot in self.food:
                         return -INFINITY ** 2
 
+                    # snake might be more likely to go to food
+                    for food in self.food:
+                        if food not in component:
+                            continue
+
+                        if manhattan(snake.head, food) < (self.width + self.height) / 3:
+                            if manhattan(snake.head, food) > manhattan(spot, food):
+                                return - 3 * INFINITY
+
                     # snake is more likely to go straight
                     prevdir = (snake.head[0] - snake.body[1][0], snake.head[1] - snake.body[1][1])
                     if (spot[0] - snake.head[0], spot[1] - snake.head[1]) == prevdir:
-                        return - 3 * INFINITY
-                    else:
-                        # snake might be more likely to go to food
-                        for food in self.food:
-                            if manhattan(snake.head, food) < (self.width + self.height) / 3:
-                                if manhattan(snake.head, food) > manhattan(spot, food):
-                                    return - 2 * INFINITY
+                        return - 2 * INFINITY
 
                     return -INFINITY
                 else:
@@ -388,7 +398,7 @@ class Game(object):
 
         return max(paths, key=lambda p: self.score(p, score_field))
 
-    def no_food(self, components, next_components):
+    def no_food(self):
 
         choices = {}
         comp_reached = {}
@@ -405,7 +415,7 @@ class Game(object):
             if any(manhattan(nxt, snake.head) == 1 and snake.strength() >= self.you.strength() for snake in self.snakes):
 
                 # prefer to stay in larger area
-                for component in components:
+                for component in self.components:
                     if nxt in component:
                         if len(component) > len(self.you) / 4:
                             # going to be negative anyway
@@ -416,7 +426,7 @@ class Game(object):
                         break
                 continue
 
-            for component in components:
+            for component in self.components:
                 if nxt in component:
                     choices[dirs[direction]] = 3 * (len(component) - len(self.you.body))
                     comp_reached[dirs[direction]] = component
@@ -424,8 +434,8 @@ class Game(object):
             else:
                 continue
 
-            for next_component in next_components:
-                if nxt in components:
+            for next_component in self.next_components:
+                if nxt in next_component:
                     choices[dirs[direction]] = 3 * (len(next_component) - len(self.you.body))
                     break
 
@@ -466,11 +476,11 @@ class Game(object):
         return best
 
     def move(self):
-        components = self.components()
+        self.components = self.get_components()
 
         semi_allowed_food = set(self.food)
 
-        for component in components:
+        for component in self.components:
             if not any(manhattan(spot, self.you.head) == 1 for spot in component):
                 semi_allowed_food -= component
 
@@ -539,16 +549,16 @@ class Game(object):
                             head_field[next_next] = -1
 
         # we don't like our snake to move across forbidden lines either
-        next_components = self.components(*[(snake.head[0] + direction[0], snake.head[1] + direction[1])
-                                            for direction in dirs for snake in self.snakes]
-                                           + [tuple(p) for p in np.argwhere(head_field == -1)])
+        self.next_components = self.get_components(*[(snake.head[0] + direction[0], snake.head[1] + direction[1])
+                                                     for direction in dirs for snake in self.snakes]
+                                                    + [tuple(p) for p in np.argwhere(head_field == -1)])
 
         # don't allow food that other snakes could cut off
-        for next_component in next_components:
+        for next_component in self.next_components:
 
             if len(next_component) < len(self.you):
 
-                for component in components:
+                for component in self.components:
                     if next_component & component:
                         if len(component) < len(self.you):
                             semi_allowed_food -= component
@@ -567,7 +577,7 @@ class Game(object):
                 allowed_food = semi_allowed_food
             else:
                 print("NO FOOD ALLOWED")
-                return self.no_food(components, next_components)
+                return self.no_food()
 
         food_field = np.array(head_field)
 
@@ -576,7 +586,7 @@ class Game(object):
         # no reachable food case
         if not food_found:
             print("NO PATH TO FOOD")
-            return self.no_food(components, next_components)
+            return self.no_food()
 
         food_field, _ = self.flow([np.array(food) for food in food_found], {self.you.head}, food_field)
 
@@ -629,7 +639,7 @@ class Game(object):
 
         if len(paths) == 0:
             print("WON'T MOVE NEXT TO BETTER SNAKES HEAD")
-            return self.no_food(components, next_components)
+            return self.no_food()
 
         best = self.get_best(paths, allowed_squares)
         return best.get()
