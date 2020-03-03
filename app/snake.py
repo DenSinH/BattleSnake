@@ -509,6 +509,8 @@ class Game(object):
             elif len(component) < 0.8 * len(self.you):
                 semi_allowed_food -= component
 
+        print("AFTER BASIC SMALL COMPONENTS:", semi_allowed_food)
+
         # prepare field
         inf = self.width * self.height + 1
         head_field = inf * np.ones((self.width, self.height))
@@ -561,6 +563,7 @@ class Game(object):
                         break
 
         allowed_food = set(semi_allowed_food)
+        print("AFTER SNAKE PREDICTION:", semi_allowed_food)
 
         for snake in self.snakes + [self.you]:
             rows, cols = zip(*snake.body[:-1])
@@ -615,6 +618,8 @@ class Game(object):
                 head_field[rows, cols] = -1
 
                 allowed_food -= next_component
+
+        print("AFTER NEXT COMPONENTS", allowed_food)
 
         # no food case:
         if len(allowed_food) == 0:
