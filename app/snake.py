@@ -229,7 +229,7 @@ class Game(object):
                 if not (0 <= nxt[0] < self.width and 0 <= nxt[1] <= self.height):
                     continue
 
-                if nxt == self.you.head:
+                if manhattan(nxt, self.you.head) <= 1:
                     continue
 
                 for snake in self.snakes + [self.you]:
@@ -532,6 +532,9 @@ class Game(object):
 
         # predict movement for snakes that have one option of moving
         for snake in self.snakes:
+            if snake.strength() < self.you.strength():
+                continue
+
             allowed_next = None
             for direction in dirs:
                 next_head = (snake.head[0] + direction[0], snake.head[1] + direction[1])
