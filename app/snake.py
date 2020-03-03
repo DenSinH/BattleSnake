@@ -427,9 +427,19 @@ class Game(object):
             if not (0 <= nxt[0] < self.width and 0 <= nxt[1] <= self.height):
                 continue
 
-            if any(nxt in snake for snake in self.snakes + [self.you]):
-                continue
+            done = False
+            for snake in self.snakes:
+                if nxt == snake.body[-1] and snake.health == 100:
+                    choices[dirs[direction]] = INFINITY
+                    done = True
+                    break
+                elif nxt in snake:
+                    done = True
+                    break
 
+            if done:
+                continue
+                
             for snake in sorted(self.snakes, key=lambda snake: -snake.strength()):
                 if manhattan(nxt, snake.head) == 1 and snake.strength() >= self.you.strength():
 
