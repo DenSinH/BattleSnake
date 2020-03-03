@@ -204,7 +204,7 @@ class Game(object):
                             generation.append(nxt)
 
             if len(generation) == 1:
-                return field, {generation[0]}
+                return field, {(generation[0][0], generation[0][1])}
             dist += 1
 
         return field, target_found
