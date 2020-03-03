@@ -213,7 +213,7 @@ class Game(object):
     def get_target(self, component):
         # determine target for longest path
         target = None
-        target_score = INFINITY
+        target_score = -INFINITY
 
         # tails might be part of a component
         if self.you.body[-1] in component:
@@ -241,7 +241,7 @@ class Game(object):
                     if nxt in snake:
                         for i in range(len(snake.body)):
                             if nxt == snake.body[i]:
-                                nxt_score = len(snake) - i - manhattan(nxt, self.you.head)
+                                nxt_score = i - len(snake) + manhattan(nxt, self.you.head)
                                 # todo: check component connections?
                                 break
                         break
@@ -249,11 +249,12 @@ class Game(object):
                     continue
 
                 # nxt_score is defined since nxt is always in some snake
-                if nxt_score < target_score or target is None:
+                if nxt_score > target_score or target is None:
                     target = nxt
                     target_score = nxt_score
 
-        return target
+        # highest score is best
+        return target, target_score
 
     def longest_path(self, target, component):
         # todo: allowed squares then complete the thing
@@ -439,7 +440,7 @@ class Game(object):
 
             if done:
                 continue
-                
+
             for snake in sorted(self.snakes, key=lambda snake: -snake.strength()):
                 if manhattan(nxt, snake.head) == 1 and snake.strength() >= self.you.strength():
 
@@ -489,7 +490,7 @@ class Game(object):
 
             print("CHECKING LONGEST PATH")
             component = best_reached.pop()
-            target = self.get_target(component)
+            target, _ = self.get_target(component)
 
             if target is not None:
                 longest = self.longest_path(target, component)
@@ -502,6 +503,11 @@ class Game(object):
                 print("THIS SHOULD NEVER HAPPEN, target IS None")
 
             return random.choice(list(dirs.values()))
+
+        elif len(best_reached) > 1:
+            # decide which component to go into
+            return max([d for d in choices if choices[d] == choices[best]],
+                       key=lambda _d: len(comp_reached[_d]) + self.get_target(comp_reached[_d])[1])
 
         print("NO FOOD: NORMAL")
         pprint(choices)
