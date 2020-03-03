@@ -430,7 +430,7 @@ class Game(object):
 
             done = False
             for snake in self.snakes:
-                if nxt == snake.body[-1] and snake.health == 100:
+                if nxt == snake.body[-1] and snake.health != 100:
                     choices[dirs[direction]] = INFINITY
                     done = True
                     break
