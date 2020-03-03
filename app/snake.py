@@ -319,6 +319,9 @@ class Game(object):
 
     def score_spot(self, spot):
 
+        if spot == self.you.body[-1] and self.you.health != 100:
+            return INFINITY**2
+
         component = set()
         for component in self.components:
             if spot in component:
@@ -358,6 +361,10 @@ class Game(object):
             # safe spot
             if manhattan(spot, self.you.head) == 1 and spot == snake.body[-1] and snake.health != 100:
                 return INFINITY
+
+            if snake.strength() > self.you.strength():
+                if manhattan(spot, self.you.head) == manhattan(spot, snake.head):
+                    s -= 5
 
             for part in snake.body[:-1]:
                 if manhattan(spot, part) == 1:
