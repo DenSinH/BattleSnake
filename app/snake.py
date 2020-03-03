@@ -645,8 +645,9 @@ class Game(object):
         allowed_squares = (head_field + food_field) == food_field[self.you.head]
 
         paths = [Path(self.you.head)]
+        finished = []
 
-        while paths and paths[0].end not in allowed_food:
+        while paths and not finished:
 
             for i in range(len(paths)):
                 current = paths.pop(0)
@@ -664,6 +665,10 @@ class Game(object):
                                and snake.strength() >= self.you.strength() for snake in self.snakes):
                             continue
 
+                    if next_end in allowed_food:
+                        finished.append(current.move(direction))
+                        continue
+
                     # moving into borders or other snakes is not allowed
                     if 0 <= next_end[0] < self.width and 0 <= next_end[1] < self.height:
 
@@ -676,24 +681,27 @@ class Game(object):
                             else:
                                 paths.append(current.move(direction))
 
+            if finished:
+                break
+
             # if there is only one path after at least 1 generation, then there is only once choice
-            if len(paths) == 1:
+            elif len(paths) == 1:
                 print("ONE CHOICE")
-                return self.get_best(paths, allowed_squares).get()
+                return self.get_best(finished if finished else paths, allowed_squares).get()
 
             # if there are too many allowed squares, just find the best move after one generation
             elif len(paths) > 120 and np.count_nonzero(allowed_squares) >= 30:
                 print("TOO MANY POSSIBILITIES")
                 return self.get_best(paths, allowed_squares).get()
 
-        print(len(paths), "PATHS FOUND TO FOOD")
+        print(len(finished), "PATHS FOUND TO FOOD")
         print(np.count_nonzero(allowed_squares), "ALLOWED SQUARES")
 
-        if len(paths) == 0:
+        if len(finished) == 0:
             print("NO PATHS")
             return self.no_food()
 
-        best = self.get_best(paths, allowed_squares)
+        best = self.get_best(finished, allowed_squares)
         return best.get()
 
 
