@@ -2,6 +2,7 @@ import numpy as np
 import random
 import sys
 import os
+from pprint import pprint
 
 # fixing api import error
 file_dir = os.path.dirname(__file__)
@@ -427,19 +428,20 @@ class Game(object):
             if any(nxt in snake for snake in self.snakes + [self.you]):
                 continue
 
-            if any(manhattan(nxt, snake.head) == 1 and snake.strength() >= self.you.strength() for snake in self.snakes):
+            for snake in sorted(self.snakes, key=lambda snake: -snake.strengh()):
+                if manhattan(nxt, snake.head) == 1 and snake.strength() >= self.you.strength():
 
-                # prefer to stay in larger area
-                for component in self.components:
-                    if nxt in component:
-                        if len(component) > len(self.you) / 4:
-                            # going to be negative anyway
-                            choices[dirs[direction]] = - INFINITY / len(component)
-                        else:
-                            choices[dirs[direction]] = -INFINITY
-                        comp_reached[dirs[direction]] = component
-                        break
-                continue
+                    # prefer to stay in larger area
+                    for component in self.components:
+                        if nxt in component:
+                            if len(component) > len(self.you) / 4:
+                                # going to be negative anyway
+                                choices[dirs[direction]] = - INFINITY / len(component) - snake.strength()
+                            else:
+                                choices[dirs[direction]] = -INFINITY - snake.strength()
+                            comp_reached[dirs[direction]] = component
+                            break
+                    break
 
             for component in self.components:
                 if nxt in component:
@@ -490,6 +492,7 @@ class Game(object):
             return random.choice(list(dirs.values()))
 
         print("NO FOOD: NORMAL")
+        pprint(choices)
         return best
 
     def move(self):
@@ -537,24 +540,23 @@ class Game(object):
                     break
 
             else:
-                for direction in dirs:
-                    """
-                    +1: self.width - snake.head[0] + 1
-                    -1: snake.head[0]
-                    """
-                    # snakes cutting off in any direction
+                direction = (snake.head[0] - snake.body[1][0], snake.head[1] - snake.body[1][1])
+                # snakes cutting off in current direction
 
-                    c = abs(direction[1])
-                    max_l = abs(snake.head[c] - ((self.width, self.height)[c] - 1) * (1 + direction[c]) // 2)
-                    for l in range(1, max_l):
-                        nxt = (snake.head[0] + l * direction[0], snake.head[1] + l * direction[1])
-                        if any(nxt in snake.body[:-l] for snake in self.snakes):
-                            break
+                c = abs(direction[1])
+                max_l = abs(snake.head[c] - ((self.width, self.height)[c] - 1) * (1 + direction[c]) // 2)
+                if max_l > len(snake) - 1 + int(snake.health == 100):
+                    continue
 
-                        if manhattan(nxt, self.you.head) > l:
-                            head_field[nxt] = -1
-                        else:
-                            break
+                for l in range(1, max_l):
+                    nxt = (snake.head[0] + l * direction[0], snake.head[1] + l * direction[1])
+                    if any(nxt in snake.body[:-l] for snake in self.snakes):
+                        break
+
+                    if manhattan(nxt, self.you.head) > l:
+                        head_field[nxt] = -1
+                    else:
+                        break
 
         allowed_food = set(semi_allowed_food)
 
@@ -681,7 +683,7 @@ class Game(object):
         print(np.count_nonzero(allowed_squares), "ALLOWED SQUARES")
 
         if len(paths) == 0:
-            print("WON'T MOVE NEXT TO BETTER SNAKES HEAD")
+            print("NO PATHS")
             return self.no_food()
 
         best = self.get_best(paths, allowed_squares)
