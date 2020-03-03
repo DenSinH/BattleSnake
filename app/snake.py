@@ -254,7 +254,7 @@ class Game(object):
                     target_score = nxt_score
 
         # highest score is best
-        return [target, target_score]
+        return target_score, target
 
     def longest_path(self, target, component):
         # todo: allowed squares then complete the thing
@@ -490,7 +490,7 @@ class Game(object):
 
             print("CHECKING LONGEST PATH")
             component = best_reached.pop()
-            [target, _] = self.get_target(component)
+            _, target = self.get_target(component)
 
             if target is not None:
                 longest = self.longest_path(target, component)
@@ -502,12 +502,12 @@ class Game(object):
             else:
                 print("THIS SHOULD NEVER HAPPEN, target IS None")
 
-            return random.choice(choices)
+            return random.choice(list(choices))
 
         elif len(best_reached) > 1:
             # decide which component to go into
             return max([d for d in choices if choices[d] == choices[best]],
-                       key=lambda _d: len(comp_reached[_d]) + self.get_target(comp_reached[_d])[1])
+                       key=lambda _d: len(comp_reached[_d]) + self.get_target(comp_reached[_d])[0])
 
         print("NO FOOD: NORMAL")
         return best
