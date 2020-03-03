@@ -556,7 +556,7 @@ class Game(object):
             head_field[rows, cols] = -1
 
             # snake tails might disappear, so don't take these into account for the field
-            if manhattan(snake.body[-1], self.you.head) == 1 or snake.strength() == 100:
+            if manhattan(snake.body[-1], self.you.head) == 1 and snake.strength() == 100:
                 head_field[snake.body[-1]] = -1
 
         # predict movement for snakes that have one option of moving
