@@ -539,7 +539,7 @@ class Game(object):
                     max_l = abs(snake.head[c] - ((self.width, self.height)[c] + 1) * (1 + direction[c]) // 2)
                     for l in range(1, max_l):
                         nxt = (snake.head[0] + l * direction[0], snake.head[1] + l * direction[1])
-                        if any(nxt in snake.body[:-l] for snake in snake):
+                        if any(nxt in snake.body[:-l] for snake in self.snakes):
                             break
 
                         if manhattan(nxt, self.you.head) > l:
