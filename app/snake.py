@@ -109,7 +109,7 @@ class Game(object):
         # tails will move
         for snake in self.snakes + [self.you]:
             # if snake ate food, it will be the same
-            if manhattan(snake.body[-1], self.you.head) == 1 or snake.health == 100:
+            if manhattan(snake.body[-1], self.you.head) == 1 and snake.health == 100:
                 walls.add(snake.body[-1])
 
         components = []
@@ -315,12 +315,12 @@ class Game(object):
 
     def score_spot(self, spot):
 
-        s = 0
-
         component = set()
         for component in self.components:
             if spot in component:
                 break
+
+        s = 2 * len(component)
 
         for snake in self.snakes:
             if manhattan(spot, snake.head) == 1:
@@ -351,6 +351,10 @@ class Game(object):
         # snake likes to be next to game border if it is not next to another snake
         forbidden_edge = False
         for snake in self.snakes:
+            # safe spot
+            if manhattan(spot, self.you.head) == 1 and spot == snake.body[-1] and snake.health != 100:
+                return INFINITY
+
             for part in snake.body[:-1]:
                 if manhattan(spot, part) == 1:
                     next_over = (2 * spot[0] - part[0], 2 * spot[1] - part[1])
