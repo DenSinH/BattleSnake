@@ -254,7 +254,7 @@ class Game(object):
                     target_score = nxt_score
 
         # highest score is best
-        return target, target_score
+        return [target, target_score]
 
     def longest_path(self, target, component):
         # todo: allowed squares then complete the thing
@@ -490,7 +490,7 @@ class Game(object):
 
             print("CHECKING LONGEST PATH")
             component = best_reached.pop()
-            target, _ = self.get_target(component)
+            [target, _] = self.get_target(component)
 
             if target is not None:
                 longest = self.longest_path(target, component)
