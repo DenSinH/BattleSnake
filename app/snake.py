@@ -256,6 +256,8 @@ class Game(object):
         return target
 
     def longest_path(self, target, component):
+        # todo: allowed squares then complete the thing
+
         print("TARGET:", target)
         paths = PriorityQueue()
         paths.put(Path(self.you.head), 0)
@@ -428,7 +430,7 @@ class Game(object):
             if any(nxt in snake for snake in self.snakes + [self.you]):
                 continue
 
-            for snake in sorted(self.snakes, key=lambda snake: -snake.strengh()):
+            for snake in sorted(self.snakes, key=lambda snake: -snake.strength()):
                 if manhattan(nxt, snake.head) == 1 and snake.strength() >= self.you.strength():
 
                     # prefer to stay in larger area
