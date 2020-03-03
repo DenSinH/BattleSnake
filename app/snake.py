@@ -450,6 +450,7 @@ class Game(object):
             choices[dirs[direction]] += self.score_spot(nxt)
 
         if len(choices) == 0:
+            print("NO FOOD: RANDOM")
             return random.choice(list(dirs.values()))
 
         # check what components are reached by the best directions
@@ -481,6 +482,7 @@ class Game(object):
 
             return random.choice(list(dirs.values()))
 
+        print("NO FOOD: NORMAL")
         return best
 
     def move(self):
@@ -661,7 +663,7 @@ class Game(object):
             # if there is only one path after at least 1 generation, then there is only once choice
             if len(paths) == 1:
                 print("ONE CHOICE")
-                return paths[0].get()
+                return self.get_best(paths, allowed_squares).get()
 
             # if there are too many allowed squares, just find the best move after one generation
             elif len(paths) > 120 and np.count_nonzero(allowed_squares) >= 30:
