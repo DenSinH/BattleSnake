@@ -170,10 +170,12 @@ class Game(object):
 
     def flow(self, generation, target, field):
         """
-        :param generation: np.array([int, int])[]
-        :param target:  set((int, int))
-        :param field: np.2darray()
-        :return: np.2darray, [(int, int)]
+        precond: some target is reachable
+
+        :param generation: np.array([int, int])[]  starting points
+        :param target:  set((int, int))            targets
+        :param field: np.2darray()                 distance values
+        :return: np.2darray, [(int, int)], set()   field and {targets found}
 
         flows distance outward from starting generation of points
         """
@@ -201,6 +203,8 @@ class Game(object):
                             field[nxt[0], nxt[1]] = dist
                             generation.append(nxt)
 
+            if len(generation) == 1:
+                return field, {generation[0]}
             dist += 1
 
         return field, target_found
@@ -588,14 +592,14 @@ class Game(object):
 
         food_field = np.array(head_field)
 
-        head_field, food_found = self.flow([np.array(self.you.head)], allowed_food, head_field)
+        head_field, target_found = self.flow([np.array(self.you.head)], allowed_food, head_field)
 
         # no reachable food case
-        if not food_found:
+        if not target_found:
             print("NO PATH TO FOOD")
             return self.no_food()
 
-        food_field, _ = self.flow([np.array(food) for food in food_found], {self.you.head}, food_field)
+        food_field, _ = self.flow([np.array(target) for target in target_found], {self.you.head}, food_field)
 
         allowed_squares = (head_field + food_field) == food_field[self.you.head]
 
