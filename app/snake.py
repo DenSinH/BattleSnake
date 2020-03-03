@@ -433,7 +433,7 @@ class Game(object):
 
             done = False
             for snake in self.snakes:
-                # todo: and not eating a food next turn/soon
+                # todo: and not eating a food soon ?
                 if nxt == snake.body[-1] and snake.health != 100 and not any(
                     manhattan(snake.head, food) == 1 for food in self.food
                 ):
@@ -579,7 +579,8 @@ class Game(object):
                     if any(nxt in snake.body[:-l] for snake in self.snakes):
                         break
 
-                    if manhattan(nxt, self.you.head) > l:
+                    if manhattan(nxt, self.you.head) > l or \
+                            (manhattan(nxt, self.you.head) == l and snake.strength() > self.you.strength()):
                         head_field[nxt] = -1
                     else:
                         break
