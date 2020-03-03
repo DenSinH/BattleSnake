@@ -500,8 +500,8 @@ class Game(object):
         head_field = inf * np.ones((self.width, self.height))
 
         # snakes are likely to grab food in a straight line from them
-        for food in self.food:
-            for snake in self.snakes:
+        for snake in self.snakes:
+            for food in sorted(self.food, key=lambda f: -manhattan(f, snake.head)):
                 if manhattan(food, snake.head) < manhattan(food, self.you.head) or \
                         (manhattan(food, snake.head) == manhattan(food, self.you.head) and
                          snake.strength() > self.you.strength()):
@@ -523,6 +523,29 @@ class Game(object):
                         semi_allowed_food.discard(food)
                         if snake.strength() >= self.you.strength():
                             head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
+                    else:
+                        continue
+                    break
+
+            else:
+                for direction in dirs:
+                    """
+                    +1: self.width - snake.head[0] + 1
+                    -1: snake.head[0]
+                    """
+                    # snakes cutting off in any direction
+
+                    c = abs(direction[1])
+                    max_l = ((self.width, self.height)[c] + 1) * (1 + direction[c]) / 2 - snake.head[c]
+                    for l in range(1, max_l):
+                        nxt = (snake.head[0] + l * direction[0], snake.head[1] + l * direction[1])
+                        if any(nxt in snake.body[:-l] for snake in snake):
+                            break
+
+                        if manhattan(nxt, self.you.head) > l:
+                            head_field[nxt] = -1
+                        else:
+                            break
 
         allowed_food = set(semi_allowed_food)
 
