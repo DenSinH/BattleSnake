@@ -448,7 +448,6 @@ class Game(object):
                     for component in self.components:
                         if nxt in component:
                             if len(component) > len(self.you) / 4:
-                                # going to be negative anyway
                                 choices[dirs[direction]] = - INFINITY / len(component) - snake.strength()
                             else:
                                 choices[dirs[direction]] = -INFINITY - snake.strength()
@@ -475,6 +474,7 @@ class Game(object):
             print("NO FOOD: RANDOM")
             return random.choice(list(dirs.values()))
 
+        pprint(choices)
         # check what components are reached by the best directions
         best = max(choices, key=lambda d: choices[d])
         best_reached = []
@@ -502,7 +502,7 @@ class Game(object):
             else:
                 print("THIS SHOULD NEVER HAPPEN, target IS None")
 
-            return random.choice(list(dirs.values()))
+            return random.choice(choices)
 
         elif len(best_reached) > 1:
             # decide which component to go into
@@ -510,7 +510,6 @@ class Game(object):
                        key=lambda _d: len(comp_reached[_d]) + self.get_target(comp_reached[_d])[1])
 
         print("NO FOOD: NORMAL")
-        pprint(choices)
         return best
 
     def move(self):
