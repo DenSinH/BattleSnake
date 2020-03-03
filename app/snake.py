@@ -432,7 +432,7 @@ class Game(object):
             for snake in self.snakes:
                 if nxt == snake.body[-1] and snake.health != 100:
                     choices[dirs[direction]] = INFINITY
-                    comp_reached = [component for component in self.components if nxt in component].pop(0)
+                    comp_reached[dirs[direction]] = [component for component in self.components if nxt in component].pop(0)
                     done = True
                     break
                 elif nxt in snake:
