@@ -430,10 +430,11 @@ class Game(object):
 
             done = False
             for snake in self.snakes:
+                # todo: and not eating a food next turn/soon
                 if nxt == snake.body[-1] and snake.health != 100:
                     choices[dirs[direction]] = INFINITY
                     comp_reached[dirs[direction]] = [component for component in self.components if nxt in component].pop(0)
-                    done = True
+                    # not done, might be next to other snake's head
                     break
                 elif nxt in snake:
                     done = True
