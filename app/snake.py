@@ -304,6 +304,10 @@ class Game(object):
         counter = 0
 
         while not paths.empty():
+            
+            if len(longest) > 1 and counter > 1500:
+                print("BREAKING OFF EARLY")
+                break
             counter += 1
 
             current = paths.get()
