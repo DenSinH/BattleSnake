@@ -165,7 +165,7 @@ class Game(object):
                 to_check.add(nxt)
 
         if target_reached:
-            return checked
+            return checked - {origin}
         return None
 
     def flow(self, generation, target, field):
@@ -282,8 +282,10 @@ class Game(object):
 
         longest = Path(self.you.head)
         possible_squares = self.reduce_component(self.you.head, target, component)
+        counter = 0
 
         while not paths.empty():
+            counter += 1
 
             current = paths.get()
 
@@ -314,6 +316,7 @@ class Game(object):
                     print("FOUND", len(longest))
                     if len(longest) >= len(possible_squares) - 1:
                         print("LONGEST PATH FOUND EARLY:", longest.path)
+                        print(counter, "PATHS CHECKED")
                         return longest
                     continue
 
@@ -327,7 +330,7 @@ class Game(object):
                         leftover = self.leftover(possible_squares, next_end, target, *current.path)
                         # if leftover is None then we cannot finish this path
                         if leftover is not None:
-                            if len(current) + len(leftover) >= len(longest):
+                            if len(current) + len(leftover) + 1 >= len(longest):
                                 paths.put(current.move(direction), len(current) + manhattan(next_end, target))
 
         if len(longest) == 1:
@@ -337,6 +340,7 @@ class Game(object):
             return None
 
         print("LONGEST PATH IS", longest.path)
+        print(counter, "PATHS CHECKED")
         return longest
 
     def score_spot(self, spot):
