@@ -285,8 +285,8 @@ class Game(object):
             if point not in new_component:
                 continue
 
-            leftover = self.leftover(component, origin, target, point)
-            if leftover is not None and len(leftover) < len(component) - 1:
+            leftover = self.leftover(new_component, origin, target, point)
+            if leftover is not None and len(leftover) < len(new_component) - 1:
                 new_component &= leftover
 
         return new_component
