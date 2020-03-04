@@ -24,6 +24,19 @@ def manhattan(point1, point2):
     return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
 
 
+def remove_nook(component, start, target, origin):
+    neighbor = None
+    for _direction in dirs:
+        nxt = (start[0] + _direction[0], start[1] + _direction[1])
+        if nxt in component | {target, origin}:
+            if neighbor is not None:
+                return component
+            else:
+                neighbor = nxt
+
+    return remove_nook(component - {start}, neighbor, target, origin)
+
+
 class Path(object):
 
     def __init__(self, end, prevdir=None, path=None, firstdir=None):
@@ -267,18 +280,6 @@ class Game(object):
 
         new_component = set(component)
 
-        def remove_nook(component, start):
-            neighbor = None
-            for _direction in dirs:
-                nxt = (start[0] + _direction[0], start[1] + _direction[1])
-                if nxt in component | {target, origin}:
-                    if neighbor is not None:
-                        return component
-                    else:
-                        neighbor = nxt
-
-            return remove_nook(component - {start}, neighbor)
-
         # remove "nooks" (no neighbors)
 
         for point in component:
@@ -291,7 +292,7 @@ class Game(object):
                     neighbors += 1
 
             if neighbors == 1:
-                nook = remove_nook(new_component, point)
+                nook = remove_nook(new_component, point, target, origin)
                 print("REMOVED NOOK", new_component - nook)
                 new_component &= nook
 
