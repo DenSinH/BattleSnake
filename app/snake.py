@@ -135,13 +135,12 @@ class Game(object):
 
         return components
 
-    def leftover(self, component, path, end, target):
-        to_check = {end}
+    def leftover(self, component, origin, target, *extra):
+        to_check = {origin}
         checked = set()
-        path_set = set(path.path)
+        path_set = set(extra)
 
         # !!! leftover is not 0 because end is not in path !!!
-        leftover = 1
         target_reached = False
 
         while to_check:
@@ -164,10 +163,9 @@ class Game(object):
                     continue
 
                 to_check.add(nxt)
-                leftover += 1
 
         if target_reached:
-            return leftover
+            return checked
         return -1
 
     def flow(self, generation, target, field):
@@ -257,6 +255,17 @@ class Game(object):
         # highest score is best
         return target, target_score
 
+    def reduce_component(self, origin, target, component):
+        """
+        :param origin: (int, int)
+        :param target: (int, int)
+        :param component: {(int, int)}
+        :return: {(int, int)} contained in component
+        """
+        new_component = set()
+        for point in component:
+            pass
+
     def longest_path(self, target, component):
         # todo: allowed squares then complete the thing
 
@@ -307,7 +316,7 @@ class Game(object):
                         if next_end in snake:
                             break
                     else:
-                        leftover = self.leftover(component, current, next_end, target)
+                        leftover = len(self.leftover(component, next_end, target, *current.path))
                         # if leftover < 0 then we cannot finish this path
                         if leftover >= 0:
                             if len(current) + leftover >= len(longest):
