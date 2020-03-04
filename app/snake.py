@@ -460,6 +460,9 @@ class Game(object):
         for direction in dirs:
             nxt = (self.you.head[0] + direction[0], self.you.head[1] + direction[1])
 
+            if not any(nxt in component for component in self.components):
+                continue
+
             if not (0 <= nxt[0] < self.width and 0 <= nxt[1] <= self.height):
                 continue
 
