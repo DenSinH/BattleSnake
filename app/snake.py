@@ -390,10 +390,10 @@ class Game(object):
                     return -INFINITY
                 else:
                     # slight bit of aggression
-                    s += 10
+                    s += 5
 
         # snake likes to be next to game border if it is not next to another snake
-        forbidden_edge = False
+        forbidden_edge = set()
         for snake in self.snakes:
             # safe spot
             if manhattan(spot, self.you.head) == 1 and spot == snake.body[-1] and snake.health != 100 and not any(
@@ -411,11 +411,11 @@ class Game(object):
 
                     if next_over[0] in [-1, self.width]:
                         s -= 3
-                        forbidden_edge = True
+                        forbidden_edge.add((next_over[0], 0))
 
                     elif next_over[1] in [-1, self.height]:
                         s -= 3
-                        forbidden_edge = True
+                        forbidden_edge.add((0, next_over[1]))
 
                     elif any(next_over in _snake for _snake in self.snakes + [self.you]):
                         s -= 3
