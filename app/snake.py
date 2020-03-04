@@ -262,9 +262,16 @@ class Game(object):
         :param component: {(int, int)}
         :return: {(int, int)} contained in component
         """
-        new_component = set()
+        new_component = set(component)
         for point in component:
-            pass
+            if point not in new_component:
+                continue
+
+            leftover = self.leftover(component, origin, target, point)
+            if leftover is not None:
+                new_component &= leftover
+
+        return new_component
 
     def longest_path(self, target, component):
         # todo: allowed squares then complete the thing
@@ -274,6 +281,7 @@ class Game(object):
         paths.put(Path(self.you.head), 0)
 
         longest = Path(self.you.head)
+        possible_squares = self.reduce_component(self.you.head, target, component)
 
         while not paths.empty():
 
@@ -297,14 +305,14 @@ class Game(object):
 
                 if next_end == target:
                     longest = max(longest, current.move(direction), key=lambda p: len(p))
-                    if len(longest) > 1:
-                        print(f"LONGEST PATH FOUND OF LENGTH {len(longest)}:", longest.path)
-                        return longest
+                    # if len(longest) > 1:
+                    #     print(f"LONGEST PATH FOUND OF LENGTH {len(longest)}:", longest.path)
+                    #     return longest
 
                     # todo: is this actually the longest path?
 
                     print("FOUND", len(longest))
-                    if len(longest) >= len(component) - 1:
+                    if len(longest) >= len(possible_squares) - 1:
                         print("LONGEST PATH FOUND EARLY:", longest.path)
                         return longest
                     continue
@@ -316,7 +324,7 @@ class Game(object):
                         if next_end in snake:
                             break
                     else:
-                        leftover = self.leftover(component, next_end, target, *current.path)
+                        leftover = self.leftover(possible_squares, next_end, target, *current.path)
                         # if leftover is None then we cannot finish this path
                         if leftover is not None:
                             if len(current) + len(leftover) >= len(longest):
