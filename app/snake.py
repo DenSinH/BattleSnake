@@ -292,8 +292,6 @@ class Game(object):
         return new_component
 
     def longest_path(self, target, component):
-        # todo: allowed squares then complete the thing
-
         print("TARGET:", target)
         paths = PriorityQueue()
         paths.put(Path(self.you.head), 0)
@@ -304,18 +302,13 @@ class Game(object):
         counter = 0
 
         while not paths.empty():
-            
+
             if len(longest) > 1 and counter > 1500:
                 print("BREAKING OFF EARLY")
                 break
             counter += 1
 
             current = paths.get()
-
-            if len(paths) > 100:
-                print(len(paths))
-
-            # todo: stop if taking too long
 
             for direction in dirs:
                 # moving backwards is not allowed
@@ -330,11 +323,6 @@ class Game(object):
 
                 if next_end == target:
                     longest = max(longest, current.move(direction), key=lambda p: len(p))
-                    # if len(longest) > 1:
-                    #     print(f"LONGEST PATH FOUND OF LENGTH {len(longest)}:", longest.path)
-                    #     return longest
-
-                    # todo: is this actually the longest path?
 
                     print("FOUND", len(longest))
                     if len(longest) >= len(possible_squares) - 1:
@@ -452,8 +440,8 @@ class Game(object):
 
     def score(self, path, score_field):
         # prefer to go straight slightly
-        return sum(score_field[spot] for spot in path) + int(path.prevdir == (self.you.head[0] - self.you.body[1][0],
-                                                                              self.you.head[1] - self.you.body[1][1]))
+        return sum((1 + 10 / (1 + i)) * score_field[path[i]] for i in range(len(path))) + \
+               11 * int(path.prevdir == (self.you.head[0] - self.you.body[1][0], self.you.head[1] - self.you.body[1][1]))
 
     def get_best(self, paths, allowed_squares):
         # assign score values to allowed_squares and calculate score
