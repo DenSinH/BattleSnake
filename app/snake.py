@@ -263,22 +263,35 @@ class Game(object):
         :return: {(int, int)} contained in component
         """
 
+        # NOTE: There may still be loops in the final component
+
         new_component = set(component)
 
+        def remove_nook(component, start):
+            neighbor = None
+            for _direction in dirs:
+                nxt = (point[0] + _direction[0], point[1] + _direction[1])
+                if nxt in component | {target, origin}:
+                    if neighbor is not None:
+                        return component
+                    else:
+                        neighbor = nxt
+
+            return remove_nook(component - {start}, neighbor)
+
         # remove "nooks" (no neighbors)
-        while True:
-            for point in new_component:
 
-                neighbors = 0
-                for direction in dirs:
-                    if (point[0] + direction[0], point[1] + direction[1]) in new_component | {target, origin}:
-                        neighbors += 1
+        for point in component:
+            if point not in new_component:
+                continue
 
-                if neighbors == 1:
-                    new_component -= {point}
-                    break
-            else:
-                break
+            neighbors = 0
+            for direction in dirs:
+                if (point[0] + direction[0], point[1] + direction[1]) in new_component | {target, origin}:
+                    neighbors += 1
+
+            if neighbors == 1:
+                new_component &= remove_nook(new_component, point)
 
         # remove "hallways" not separating origin and target
         for point in component:
