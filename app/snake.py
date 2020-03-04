@@ -494,18 +494,12 @@ class Game(object):
                             break
                     break
 
-            for component in self.components:
-                if nxt in component:
-                    choices[dirs[direction]] = 3 * (len(component) - len(self.you.body))
-                    comp_reached[dirs[direction]] = component
-                    break
-            else:
-                continue
-
             for next_component in self.next_components:
                 if nxt in next_component:
                     choices[dirs[direction]] = 3 * (len(next_component) - len(self.you.body))
                     break
+            else:
+                choices[dirs[direction]] = -3 * len(self.you.body)
 
             choices[dirs[direction]] += self.score_spot(nxt)
 
