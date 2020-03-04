@@ -25,6 +25,7 @@ def manhattan(point1, point2):
 
 
 def remove_nook(component, start, target, origin):
+    print(start)
     neighbor = None
     for _direction in dirs:
         nxt = (start[0] + _direction[0], start[1] + _direction[1])
