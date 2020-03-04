@@ -138,7 +138,7 @@ class Game(object):
     def leftover(self, component, origin, target, *extra):
         to_check = {origin}
         checked = set()
-        path_set = set(extra)
+        extra_set = set(extra)
 
         # !!! leftover is not 0 because end is not in path !!!
         target_reached = False
@@ -159,14 +159,14 @@ class Game(object):
                 if nxt in checked:
                     continue
 
-                if nxt in path_set:
+                if nxt in extra_set:
                     continue
 
                 to_check.add(nxt)
 
         if target_reached:
             return checked
-        return -1
+        return None
 
     def flow(self, generation, target, field):
         """
@@ -316,10 +316,10 @@ class Game(object):
                         if next_end in snake:
                             break
                     else:
-                        leftover = len(self.leftover(component, next_end, target, *current.path))
-                        # if leftover < 0 then we cannot finish this path
-                        if leftover >= 0:
-                            if len(current) + leftover >= len(longest):
+                        leftover = self.leftover(component, next_end, target, *current.path)
+                        # if leftover is None then we cannot finish this path
+                        if leftover is not None:
+                            if len(current) + len(leftover) >= len(longest):
                                 paths.put(current.move(direction), len(current) + manhattan(next_end, target))
 
         if len(longest) == 1:
