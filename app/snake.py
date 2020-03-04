@@ -598,24 +598,26 @@ class Game(object):
                     break
 
             else:
-                direction = (snake.head[0] - snake.body[1][0], snake.head[1] - snake.body[1][1])
-                # snakes cutting off in current direction
+                if any(manhattan(part, self.you.head) <= 2 for part in snake.body):
+                    # direction = (snake.head[0] - snake.body[1][0], snake.head[1] - snake.body[1][1])
+                    # snakes cutting off in current direction
+                    for direction in dirs:
 
-                c = abs(direction[1])
-                max_l = abs(snake.head[c] - ((self.width, self.height)[c] - 1) * (1 + direction[c]) // 2)
-                if max_l > len(snake) - 1 + int(snake.health == 100):
-                    continue
+                        c = abs(direction[1])
+                        max_l = abs(snake.head[c] - ((self.width, self.height)[c] - 1) * (1 + direction[c]) // 2)
+                        if max_l > len(snake) - 1 + int(snake.health == 100):
+                            continue
 
-                for l in range(1, max_l):
-                    nxt = (snake.head[0] + l * direction[0], snake.head[1] + l * direction[1])
-                    if any(nxt in snake.body[:-l] for snake in self.snakes):
-                        break
+                        for l in range(1, max_l):
+                            nxt = (snake.head[0] + l * direction[0], snake.head[1] + l * direction[1])
+                            if any(nxt in snake.body[:-l] for snake in self.snakes):
+                                break
 
-                    if manhattan(nxt, self.you.head) > l or \
-                            (manhattan(nxt, self.you.head) == l and snake.strength() > self.you.strength()):
-                        head_field[nxt] = -1
-                    else:
-                        break
+                            if manhattan(nxt, self.you.head) > l or \
+                                    (manhattan(nxt, self.you.head) == l and snake.strength() > self.you.strength()):
+                                head_field[nxt] = -1
+                            else:
+                                break
 
         allowed_food = set(semi_allowed_food)
         print("AFTER SNAKE PREDICTION:", semi_allowed_food)
