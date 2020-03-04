@@ -24,6 +24,7 @@ def manhattan(point1, point2):
     return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
 
 
+# backtrack to remove nooks
 def remove_nook(component, start, target, origin):
     if start == target or start == origin:
         return component
@@ -458,9 +459,15 @@ class Game(object):
         return s
 
     def score(self, path, score_field):
+
         # prefer to go straight slightly
-        return sum((1 + 10 / (1 + i)) * score_field[path[i]] for i in range(len(path))) + \
-               11 * int(path.prevdir == (self.you.head[0] - self.you.body[1][0], self.you.head[1] - self.you.body[1][1]))
+        return (
+            sum((1 + 10 / (1 + i)) * score_field[path[i]] for i in range(len(path))),
+            sum((1 + 10 / (1 + i)) * int((path[i][0] - path[i - 1][0],
+                                          path[i][1] - path[i - 1][1]) == (path[i + 1][0] - path[i][0],
+                                                                           path[i + 1][1] - path[i][1]))
+                for i in range(1, len(path) - 1)) // len(path)
+        )
 
     def get_best(self, paths, allowed_squares):
         # assign score values to allowed_squares and calculate score
