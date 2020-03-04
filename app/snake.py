@@ -291,7 +291,9 @@ class Game(object):
                     neighbors += 1
 
             if neighbors == 1:
-                new_component &= remove_nook(new_component, point)
+                nook = remove_nook(new_component, point)
+                print("REMOVED NOOK", new_component - nook)
+                new_component &= nook
 
         # remove "hallways" not separating origin and target
         for point in component:
