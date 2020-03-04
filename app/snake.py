@@ -379,12 +379,13 @@ class Game(object):
         if spot == self.you.body[-1] and self.you.health != 100:
             return INFINITY**2
 
-        component = set()
-        for component in self.components:
-            if spot in component:
+        for next_component in self.next_components:
+            if spot in next_component:
                 break
+        else:
+            next_component = set()
 
-        s = 2 * len(component)
+        s = 2 * len(next_component)
 
         for snake in self.snakes:
             if manhattan(spot, snake.head) == 1:
@@ -395,9 +396,6 @@ class Game(object):
 
                     # snake might be more likely to go to food
                     for food in self.food:
-                        if food not in component:
-                            continue
-
                         if manhattan(snake.head, food) < (self.width + self.height) / 3:
                             if manhattan(snake.head, food) > manhattan(spot, food):
                                 return - 3 * INFINITY
@@ -466,7 +464,7 @@ class Game(object):
             sum((1 + 10 / (1 + i)) * int((path[i][0] - path[i - 1][0],
                                           path[i][1] - path[i - 1][1]) == (path[i + 1][0] - path[i][0],
                                                                            path[i + 1][1] - path[i][1]))
-                for i in range(1, len(path) - 1)) // len(path)
+                for i in range(1, len(path) - 1))
         )
 
     def get_best(self, paths, allowed_squares):
