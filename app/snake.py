@@ -270,7 +270,7 @@ class Game(object):
         def remove_nook(component, start):
             neighbor = None
             for _direction in dirs:
-                nxt = (point[0] + _direction[0], point[1] + _direction[1])
+                nxt = (start[0] + _direction[0], start[1] + _direction[1])
                 if nxt in component | {target, origin}:
                     if neighbor is not None:
                         return component
