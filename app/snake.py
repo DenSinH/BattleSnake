@@ -262,7 +262,25 @@ class Game(object):
         :param component: {(int, int)}
         :return: {(int, int)} contained in component
         """
+
         new_component = set(component)
+
+        # remove "nooks" (no neighbors)
+        while True:
+            for point in new_component:
+
+                neighbors = 0
+                for direction in dirs:
+                    if (point[0] + direction[0], point[1] + direction[1]) in new_component | {target, origin}:
+                        neighbors += 1
+
+                if neighbors == 1:
+                    new_component -= {point}
+                    break
+            else:
+                break
+
+        # remove "hallways" not separating origin and target
         for point in component:
             if point not in new_component:
                 continue
@@ -282,6 +300,7 @@ class Game(object):
 
         longest = Path(self.you.head)
         possible_squares = self.reduce_component(self.you.head, target, component)
+        print(component - possible_squares)
         counter = 0
 
         while not paths.empty():
