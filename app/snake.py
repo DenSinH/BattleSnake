@@ -639,12 +639,15 @@ class Game(object):
                     break
 
             else:
-                if True or min(snake.head[0],
-                       snake.head[1],
-                       self.width - snake.head[0],
-                       self.height - snake.head[1]) <= min(len(snake), self.width/4, self.height/4) or \
-                        any(manhattan(part, self.you.head) <= 2 for part in snake.body):
-                    # direction = (snake.head[0] - snake.body[1][0], snake.head[1] - snake.body[1][1])
+                if True:
+                    # min(snake.head[0],
+                    #    snake.head[1],
+                    #    self.width - snake.head[0],
+                    #    self.height - snake.head[1]) <= min(len(snake), self.width/4, self.height/4) or \
+                    #     any(manhattan(part, self.you.head) <= 2 for part in snake.body):
+
+
+                    # one dir: direction = (snake.head[0] - snake.body[1][0], snake.head[1] - snake.body[1][1])
                     # snakes cutting off in current direction
                     for direction in dirs:
 
