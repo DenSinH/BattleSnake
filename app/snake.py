@@ -19,6 +19,10 @@ dirs = {
 
 INFINITY = 9999999
 
+LONGEST_PATH_THRESHOLD = 1000
+SHORTEST_PATH_THRESHOLD = 120
+ALLOWED_SQUARES_THRESHOLD = 30
+
 
 def manhattan(point1, point2):
     return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
@@ -323,7 +327,7 @@ class Game(object):
 
         while not paths.empty():
 
-            if len(longest) > 1 and counter > 1000:
+            if len(longest) > 1 and counter > LONGEST_PATH_THRESHOLD:
                 print("BREAKING OFF EARLY")
                 break
             counter += 1
@@ -635,7 +639,11 @@ class Game(object):
                     break
 
             else:
-                if any(manhattan(part, self.you.head) <= 2 for part in snake.body):
+                if min(snake.head[0],
+                       snake.head[1],
+                       self.width - snake.head[0],
+                       self.height - snake.head[1]) <= min(len(snake), self.width/4, self.height/4) or \
+                        any(manhattan(part, self.you.head) <= 2 for part in snake.body):
                     # direction = (snake.head[0] - snake.body[1][0], snake.head[1] - snake.body[1][1])
                     # snakes cutting off in current direction
                     for direction in dirs:
@@ -786,7 +794,7 @@ class Game(object):
                 return self.get_best(finished if finished else paths, allowed_squares).get()
 
             # if there are too many allowed squares, just find the best move after one generation
-            elif len(paths) > 120 and np.count_nonzero(allowed_squares) >= 30:
+            elif len(paths) > SHORTEST_PATH_THRESHOLD and np.count_nonzero(allowed_squares) >= ALLOWED_SQUARES_THRESHOLD:
                 print("TOO MANY POSSIBILITIES")
                 return self.get_best(paths, allowed_squares).get()
 
