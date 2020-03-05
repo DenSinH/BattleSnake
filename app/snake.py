@@ -375,10 +375,12 @@ class Game(object):
         return longest
 
     def score_spot(self, spot):
+        # todo: if no other snake heads in same component as spot: + 20
 
         if spot == self.you.body[-1] and self.you.health != 100:
             return INFINITY**2
 
+        # like large components
         for next_component in self.next_components:
             if spot in next_component:
                 break
@@ -386,6 +388,14 @@ class Game(object):
             next_component = set()
 
         s = 2 * len(next_component)
+
+        # stay away from other snakes
+        for component in self.components:
+            if spot in component:
+                if any(manhattan(point, snake.head) == 1 for snake in self.snakes for point in component):
+                    break
+        else:
+            s += 20
 
         for snake in self.snakes:
             if manhattan(spot, snake.head) == 1:
@@ -517,6 +527,9 @@ class Game(object):
                             comp_reached[dirs[direction]] = component
                             break
                     break
+                else:
+                    if snake.strength() < self.you.strength():
+                        break
 
             for component in self.components:
                 if nxt in component:
