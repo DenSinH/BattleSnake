@@ -323,7 +323,7 @@ class Game(object):
 
         while not paths.empty():
 
-            if len(longest) > 1 and counter > 1500:
+            if len(longest) > 1 and counter > 1000:
                 print("BREAKING OFF EARLY")
                 break
             counter += 1
@@ -344,7 +344,6 @@ class Game(object):
                 if next_end == target:
                     longest = max(longest, current.move(direction), key=lambda p: len(p))
 
-                    print("FOUND", len(longest))
                     if len(longest) >= len(possible_squares) - 1:
                         print("LONGEST PATH FOUND EARLY:", longest.path)
                         print(counter, "PATHS CHECKED")
