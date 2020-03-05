@@ -655,7 +655,7 @@ class Game(object):
 
                         for l in range(1, max_l):
                             nxt = (snake.head[0] + l * direction[0], snake.head[1] + l * direction[1])
-                            if any(nxt in snake.body[:-l] for snake in self.snakes):
+                            if any(nxt in snake.body for snake in self.snakes + [self.you]):
                                 break
 
                             if manhattan(nxt, self.you.head) > l or \
