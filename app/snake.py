@@ -639,7 +639,7 @@ class Game(object):
                     break
 
             else:
-                if min(snake.head[0],
+                if True or min(snake.head[0],
                        snake.head[1],
                        self.width - snake.head[0],
                        self.height - snake.head[1]) <= min(len(snake), self.width/4, self.height/4) or \
