@@ -624,6 +624,7 @@ class Game(object):
 
                         semi_allowed_food.discard(food)
                         if snake.strength() >= self.you.strength():
+                            # todo: distance closer to self.you.head like below (regardless of strength)
                             head_field[food[0], min(food[1], snake.head[1]):max(food[1], snake.head[1]) + 1] = -1
 
                     elif food[1] == snake.head[1] and not any((i, food[1]) in _snake
@@ -633,19 +634,18 @@ class Game(object):
 
                         semi_allowed_food.discard(food)
                         if snake.strength() >= self.you.strength():
+                            # todo: distance closer to self.you.head like below
                             head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
                     else:
                         continue
                     break
 
             else:
-                if True:
-                    # min(snake.head[0],
-                    #    snake.head[1],
-                    #    self.width - snake.head[0],
-                    #    self.height - snake.head[1]) <= min(len(snake), self.width/4, self.height/4) or \
-                    #     any(manhattan(part, self.you.head) <= 2 for part in snake.body):
-
+                if min(snake.head[0],
+                       snake.head[1],
+                       self.width - snake.head[0],
+                       self.height - snake.head[1]) <= min(len(snake), self.width/4, self.height/4) or \
+                        any(manhattan(part, self.you.head) <= 2 for part in snake.body):
 
                     # one dir: direction = (snake.head[0] - snake.body[1][0], snake.head[1] - snake.body[1][1])
                     # snakes cutting off in current direction
