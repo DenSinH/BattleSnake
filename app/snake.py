@@ -624,8 +624,13 @@ class Game(object):
 
                         semi_allowed_food.discard(food)
                         if snake.strength() >= self.you.strength():
-                            # todo: distance closer to self.you.head like below (regardless of strength)
-                            head_field[food[0], min(food[1], snake.head[1]):max(food[1], snake.head[1]) + 1] = -1
+
+                            for y in range(min(food[1], snake.head[1]), max(food[1], snake.head[1]) + 1):
+                                if manhattan((food[0], y), snake.head) <= manhattan((food[0], y), self.you.head):
+                                    head_field[food[0], y] = -1
+                                else:
+                                    break
+                            # head_field[food[0], min(food[1], snake.head[1]):max(food[1], snake.head[1]) + 1] = -1
 
                     elif food[1] == snake.head[1] and not any((i, food[1]) in _snake
                                                               for _snake in self.snakes
@@ -634,8 +639,13 @@ class Game(object):
 
                         semi_allowed_food.discard(food)
                         if snake.strength() >= self.you.strength():
-                            # todo: distance closer to self.you.head like below
-                            head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
+
+                            for x in range(min(food[0], snake.head[0]), max(food[0], snake.head[0]) + 1):
+                                if manhattan((x, food[1]), snake.head) <= manhattan((x, food[1]), self.you.head):
+                                    head_field[x, food[1]] = -1
+                                else:
+                                    break
+                            # head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
                     else:
                         continue
                     break
