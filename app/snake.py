@@ -456,12 +456,17 @@ class Game(object):
 
                     break
 
-        if not forbidden_edge:
-            if any(spot[0] == edge[0] for edge in forbidden_edge):
+        if any(spot[0] == edge[0] for edge in forbidden_edge):
+            if any(spot[0] == part[0] for part in self.you.body):
                 s += 2
+            else:
+                s -= 2
 
-            elif any(spot[1] == edge[1] for edge in forbidden_edge):
+        elif any(spot[1] == edge[1] for edge in forbidden_edge):
+            if any(spot[1] == part[1] for part in self.you.body):
                 s += 2
+            else:
+                s -= 2
 
         # snake likes to be next to own body even more
         if any(manhattan(spot, part) == 1 for part in self.you.body if part != self.you.head):
