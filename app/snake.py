@@ -398,7 +398,7 @@ class Game(object):
                 if any(manhattan(point, snake.head) == 1 for snake in self.snakes for point in component):
                     break
         else:
-            s += 20
+            s += 5
 
         for snake in self.snakes:
             if manhattan(spot, snake.head) == 1:
@@ -442,11 +442,11 @@ class Game(object):
 
                     if next_over[0] in [-1, self.width]:
                         s -= 3
-                        forbidden_edge.add((next_over[0], 0))
+                        forbidden_edge.add((next_over[0], -1))
 
                     elif next_over[1] in [-1, self.height]:
                         s -= 3
-                        forbidden_edge.add((0, next_over[1]))
+                        forbidden_edge.add((-1, next_over[1]))
 
                     elif any(next_over in _snake for _snake in self.snakes + [self.you]):
                         s -= 3
@@ -457,10 +457,10 @@ class Game(object):
                     break
 
         if not forbidden_edge:
-            if spot[0] in [0, self.width - 1]:
+            if any(spot[0] == edge[0] for edge in forbidden_edge):
                 s += 2
 
-            elif spot[1] in [0, self.height - 1]:
+            elif any(spot[1] == edge[1] for edge in forbidden_edge):
                 s += 2
 
         # snake likes to be next to own body even more
@@ -543,10 +543,10 @@ class Game(object):
 
             for next_component in self.next_components:
                 if nxt in next_component:
-                    choices[dirs[direction]] = 3 * (len(next_component) - len(self.you.body))
+                    choices[dirs[direction]] = choices.get(dirs[direction], 0) + 3 * (len(next_component) - len(self.you.body))
                     break
             else:
-                choices[dirs[direction]] = -3 * len(self.you.body)
+                choices[dirs[direction]] = choices.get(dirs[direction], 0) - 3 * len(self.you.body)
 
             choices[dirs[direction]] += self.score_spot(nxt)
 
@@ -630,7 +630,6 @@ class Game(object):
                                     head_field[food[0], y] = -1
                                 else:
                                     break
-                            # head_field[food[0], min(food[1], snake.head[1]):max(food[1], snake.head[1]) + 1] = -1
 
                     elif food[1] == snake.head[1] and not any((i, food[1]) in _snake
                                                               for _snake in self.snakes
@@ -645,7 +644,6 @@ class Game(object):
                                     head_field[x, food[1]] = -1
                                 else:
                                     break
-                            # head_field[min(food[0], snake.head[0]):max(food[0], snake.head[0]) + 1, food[1]] = -1
                     else:
                         continue
                     break
@@ -825,48 +823,3 @@ class Game(object):
 def make_move(data):
     game = Game(you=data["you"], **data["board"])
     return game.move()
-
-
-"""
-{'board': {'food': [{'x': 0, 'y': 2},
-                    {'x': 18, 'y': 2},
-                    {'x': 18, 'y': 9},
-                    {'x': 4, 'y': 16}],
-           'height': 19,
-           'snakes': [{'body': [{'x': 17, 'y': 8},
-                                {'x': 17, 'y': 9},
-                                {'x': 17, 'y': 10}],
-                       'health': 91,
-                       'id': 'gs_63XBjDGkmVgKtkrvPr7bVCrH',
-                       'name': 'matthewlehner / Ouroboros'},
-                      {'body': [{'x': 1, 'y': 18},
-                                {'x': 1, 'y': 17},
-                                {'x': 1, 'y': 16}],
-                       'health': 91,
-                       'id': 'gs_RFGgR4bqkRm9R3g3mTHRKqYV',
-                       'name': 'densinh / Dennis'}],
-           'width': 19},
- 'game': {'id': 'bd82b19c-1477-4dc6-bd33-ebe5e5e145ec'},
- 'turn': 9,
- 'you': {'body': [{'x': 1, 'y': 18}, {'x': 1, 'y': 17}, {'x': 1, 'y': 16}],
-         'health': 91,
-         'id': 'gs_RFGgR4bqkRm9R3g3mTHRKqYV',
-         'name': 'densinh / Dennis'}}
-"""
-
-"""
-x = 0, y = 0 top left
-
-x = l - 1, y = l - 1 bottom right
-first element is head
-"""
-
-"""
-todo: aggression (sectioning off other snakes, head to head colission)
-"""
-
-
-"""
-ignatius
-spud
-"""
