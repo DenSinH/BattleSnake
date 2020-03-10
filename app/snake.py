@@ -442,11 +442,11 @@ class Game(object):
 
                     if next_over[0] in [-1, self.width]:
                         s -= 3
-                        forbidden_edge.add((next_over[0], -1))
+                        forbidden_edge.add((spot[0], -1))
 
                     elif next_over[1] in [-1, self.height]:
                         s -= 3
-                        forbidden_edge.add((-1, next_over[1]))
+                        forbidden_edge.add((-1, spot[1]))
 
                     elif any(next_over in _snake for _snake in self.snakes + [self.you]):
                         s -= 3
